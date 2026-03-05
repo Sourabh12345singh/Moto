@@ -1,4 +1,4 @@
-function BikeCard({ bike, onBook, hideBookButton = false }) {
+function BikeCard({ bike, onBook, hideBookButton = false, kycApproved = true }) {
   const formatDateTime = (dateTimeStr) => {
     const date = new Date(dateTimeStr);
     return date.toLocaleString('en-IN', {
@@ -57,12 +57,21 @@ function BikeCard({ bike, onBook, hideBookButton = false }) {
             <span className="text-gray-500 text-sm">/hour</span>
           </div>
           {!hideBookButton && (
-            <button
-              onClick={() => onBook(bike)}
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
-            >
-              Book Now
-            </button>
+            kycApproved ? (
+              <button
+                onClick={() => onBook(bike)}
+                className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+              >
+                Book Now
+              </button>
+            ) : (
+              <button
+                onClick={() => onBook(bike)}
+                className="bg-gray-400 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-500 transition-colors text-sm"
+              >
+                Complete KYC to Book
+              </button>
+            )
           )}
         </div>
       </div>

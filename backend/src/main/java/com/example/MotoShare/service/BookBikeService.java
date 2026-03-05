@@ -4,6 +4,7 @@ import com.example.MotoShare.dto.BookingResponseDto;
 import com.example.MotoShare.entity.AvailabilitySlot;
 import com.example.MotoShare.entity.Bike;
 import com.example.MotoShare.entity.Booking;
+import com.example.MotoShare.entity.KycStatus;
 import com.example.MotoShare.entity.User;
 import com.example.MotoShare.repository.AvailabilitySlotRepository;
 import com.example.MotoShare.repository.BikeRepository;
@@ -40,6 +41,13 @@ public class BookBikeService {
             LocalDateTime endTime,
             Long userId
     ) {
+
+        // 0. KYC enforcement -- user must be APPROVED before booking
+        User bookingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (bookingUser.getKycStatus() != KycStatus.APPROVED) {
+            throw new RuntimeException("KYC verification required before booking. Please complete your KYC.");
+        }
 
         // 1. Fetch slot
         AvailabilitySlot slot = availabilitySlotRepository.findById(slotId)

@@ -25,6 +25,9 @@ function SearchBikes() {
   const [searched, setSearched] = useState(false);
   const [selectedBike, setSelectedBike] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [kycWarning, setKycWarning] = useState(false);
+
+  const kycApproved = user?.kycStatus === 'APPROVED';
 
   const handleSearch = async () => {
     if (!selectedCity) {
@@ -49,6 +52,11 @@ function SearchBikes() {
   };
 
   const handleBookClick = (bike) => {
+    if (!kycApproved) {
+      setKycWarning(true);
+      return;
+    }
+    setKycWarning(false);
     setSelectedBike(bike);
   };
 
@@ -116,6 +124,24 @@ function SearchBikes() {
         )}
       </div>
 
+      {/* KYC Warning */}
+      {kycWarning && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg flex items-center justify-between">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span>KYC verification required before booking. Please complete your KYC to book bikes.</span>
+          </div>
+          <a
+            href="/kyc"
+            className="ml-4 px-4 py-1.5 bg-yellow-600 text-white rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors whitespace-nowrap"
+          >
+            Complete KYC
+          </a>
+        </div>
+      )}
+
       {/* Success Message */}
       {bookingSuccess && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center">
@@ -139,7 +165,7 @@ function SearchBikes() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {bikes.map((bike) => (
-                  <BikeCard key={bike.slotId} bike={bike} onBook={handleBookClick} hideBookButton={isAdmin} />
+                  <BikeCard key={bike.slotId} bike={bike} onBook={handleBookClick} hideBookButton={isAdmin} kycApproved={kycApproved} />
                 ))}
               </div>
             </>
