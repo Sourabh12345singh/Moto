@@ -48,14 +48,8 @@ public class UserService {
     @Transactional
     public void updateKycStatus(Long userId, KycStatus status) {
 
-        // debugging line
-        System.out.println(   "i reached here 010" );
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // debugging line
-        System.out.println(   "i reached here" );
 
         if (status == KycStatus.REJECTED) {
             kycRepository.deleteByUserId(userId);
@@ -64,8 +58,16 @@ public class UserService {
             return;
         }
 
+        // Update user's kycStatus
         user.setKycStatus(status);
         userRepository.save(user);
+
+        // Also update the Kyc entity's status so it no longer shows as PENDING
+        Kyc kyc = kycRepository.findByUserId(userId).orElse(null);
+        if (kyc != null) {
+            kyc.setStatus(status);
+            kycRepository.save(kyc);
+        }
     }
 }
 
