@@ -1,0 +1,12 @@
+# Root level
+backend00/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
