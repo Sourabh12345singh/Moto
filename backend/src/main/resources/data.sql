@@ -116,3 +116,111 @@ VALUES (gen_random_uuid(), 6,
     CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '6 hours',
     CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '18 hours',
     60, true, 'Mumbai', 'Dadar Station East');
+
+-- ============================================================
+-- JAIPUR BIKES (7 bikes)
+-- ============================================================
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Royal Enfield', 'Meteor 350', 140, 'RJ14AA1001', 'RJ14-2023-001001', 9500, 'https://images.unsplash.com/photo-1558981285-6f0c94958bb6?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Honda', 'SP 125', 75, 'RJ14BB2002', 'RJ14-2024-002002', 6000, 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Bajaj', 'Dominar 400', 180, 'RJ14CC3003', 'RJ14-2023-003003', 18000, 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'TVS', 'Apache RTR 160', 110, 'RJ14DD4004', 'RJ14-2024-004004', 11000, 'https://images.unsplash.com/photo-1558980664-769d59546b3d?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Yamaha', 'FZ-S V3', 120, 'RJ14EE5005', 'RJ14-2023-005005', 14000, 'https://images.unsplash.com/photo-1525160354320-d8e92641c563?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Hero', 'Xtreme 160R', 100, 'RJ14FF6006', 'RJ14-2024-006006', 7500, 'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'KTM', 'Duke 200', 220, 'RJ14GG7007', 'RJ14-2023-007007', 20000, 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=600');
+
+-- ============================================================
+-- JAIPUR AVAILABILITY SLOTS
+-- ============================================================
+
+-- Jaipur: Royal Enfield Meteor 350 (bike_id = 7)
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 7,
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '7 hours',
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '20 hours',
+    140, true, 'Jaipur', 'Hawa Mahal Road, Near Clock Tower');
+
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 7,
+    CURRENT_TIMESTAMP + INTERVAL '4 days' + INTERVAL '8 hours',
+    CURRENT_TIMESTAMP + INTERVAL '4 days' + INTERVAL '19 hours',
+    140, true, 'Jaipur', 'Hawa Mahal Road, Near Clock Tower');
+
+-- Jaipur: Honda SP 125 (bike_id = 8)
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 8,
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '8 hours',
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '18 hours',
+    75, true, 'Jaipur', 'Sindhi Camp Bus Stand, Gate 2');
+
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 8,
+    CURRENT_TIMESTAMP + INTERVAL '3 days' + INTERVAL '9 hours',
+    CURRENT_TIMESTAMP + INTERVAL '3 days' + INTERVAL '21 hours',
+    75, true, 'Jaipur', 'Sindhi Camp Bus Stand, Gate 2');
+
+-- Jaipur: Bajaj Dominar 400 (bike_id = 9)
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 9,
+    CURRENT_TIMESTAMP + INTERVAL '2 days' + INTERVAL '6 hours',
+    CURRENT_TIMESTAMP + INTERVAL '2 days' + INTERVAL '22 hours',
+    180, true, 'Jaipur', 'Amer Fort Parking, Main Gate');
+
+-- Jaipur: TVS Apache RTR 160 (bike_id = 10)
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 10,
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '9 hours',
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '19 hours',
+    110, true, 'Jaipur', 'MI Road, Near Panch Batti');
+
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 10,
+    CURRENT_TIMESTAMP + INTERVAL '5 days' + INTERVAL '7 hours',
+    CURRENT_TIMESTAMP + INTERVAL '5 days' + INTERVAL '20 hours',
+    110, true, 'Jaipur', 'MI Road, Near Panch Batti');
+
+-- Jaipur: Yamaha FZ-S V3 (bike_id = 11)
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 11,
+    CURRENT_TIMESTAMP + INTERVAL '2 days' + INTERVAL '8 hours',
+    CURRENT_TIMESTAMP + INTERVAL '2 days' + INTERVAL '20 hours',
+    120, true, 'Jaipur', 'Mansarovar Metro Station');
+
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 11,
+    CURRENT_TIMESTAMP + INTERVAL '6 days' + INTERVAL '7 hours',
+    CURRENT_TIMESTAMP + INTERVAL '6 days' + INTERVAL '21 hours',
+    120, true, 'Jaipur', 'Mansarovar Metro Station');
+
+-- Jaipur: Hero Xtreme 160R (bike_id = 12)
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 12,
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '7 hours',
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '21 hours',
+    100, true, 'Jaipur', 'Jagatpura, Near IIHMR');
+
+-- Jaipur: KTM Duke 200 (bike_id = 13)
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 13,
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '8 hours',
+    CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '22 hours',
+    220, true, 'Jaipur', 'C-Scheme, Near Raj Mandir Cinema');
+
+INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
+VALUES (gen_random_uuid(), 13,
+    CURRENT_TIMESTAMP + INTERVAL '3 days' + INTERVAL '6 hours',
+    CURRENT_TIMESTAMP + INTERVAL '3 days' + INTERVAL '20 hours',
+    220, true, 'Jaipur', 'C-Scheme, Near Raj Mandir Cinema');
