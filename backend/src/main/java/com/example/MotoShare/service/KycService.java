@@ -23,8 +23,8 @@ public class KycService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Prevent duplicate KYC
-        if (user.getKycStatus() != KycStatus.NOT_SUBMITTED) {
+        // Only allow submission if NOT_SUBMITTED or REJECTED (resubmission after rejection)
+        if (user.getKycStatus() != KycStatus.NOT_SUBMITTED && user.getKycStatus() != KycStatus.REJECTED) {
             throw new RuntimeException("KYC already submitted");
         }
 
