@@ -25,6 +25,7 @@ public class AvailabilitySlotMapper {
                 .endHour(slot.getEndHour())
                 .city(slot.getCity())
                 .pickupLocation(slot.getPickupLocation())
+                .imageUrl(slot.getBike().getImageUrl())
                 .build();
     }
 

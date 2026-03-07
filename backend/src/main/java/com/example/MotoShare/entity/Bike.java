@@ -42,5 +42,8 @@ public class Bike {
     private String rcNumber;
 
     private Long kms;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }
 

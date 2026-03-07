@@ -12,5 +12,6 @@ public class AddBikeRequestDto {
     private String bikeNumber;
     private String rcNumber;
     private Long kms;
+    private String imageUrl;
 }
 

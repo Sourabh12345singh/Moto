@@ -203,6 +203,7 @@ export const bikerAPI = {
       bikeNumber: bikeData.bikeNumber,
       rcNumber: bikeData.rcNumber,
       kms: bikeData.kms,
+      imageUrl: bikeData.imageUrl,
     });
     return response.data;
   },

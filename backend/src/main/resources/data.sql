@@ -24,27 +24,27 @@ VALUES (1, 4.5, 12);
 -- DELHI BIKES (3 bikes)
 -- ============================================================
 
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms)
-VALUES (1, 'Honda', 'Activa 6G', 80, 'DL01AB1234', 'DL01-2023-001234', 12000);
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Honda', 'Activa 6G', 80, 'DL01AB1234', 'DL01-2023-001234', 12000, 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600');
 
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms)
-VALUES (1, 'Royal Enfield', 'Classic 350', 150, 'DL05CD5678', 'DL05-2022-005678', 25000);
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Royal Enfield', 'Classic 350', 150, 'DL05CD5678', 'DL05-2022-005678', 25000, 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=600');
 
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms)
-VALUES (1, 'Bajaj', 'Pulsar 150', 100, 'DL10EF9012', 'DL10-2024-009012', 8000);
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Bajaj', 'Pulsar 150', 100, 'DL10EF9012', 'DL10-2024-009012', 8000, 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=600');
 
 -- ============================================================
 -- MUMBAI BIKES (3 bikes)
 -- ============================================================
 
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms)
-VALUES (1, 'TVS', 'Jupiter 125', 70, 'MH01GH3456', 'MH01-2023-003456', 15000);
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'TVS', 'Jupiter 125', 70, 'MH01GH3456', 'MH01-2023-003456', 15000, 'https://images.unsplash.com/photo-1622185135505-2d795003994a?w=600');
 
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms)
-VALUES (1, 'Yamaha', 'R15 V4', 200, 'MH04IJ7890', 'MH04-2024-007890', 5000);
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Yamaha', 'R15 V4', 200, 'MH04IJ7890', 'MH04-2024-007890', 5000, 'https://images.unsplash.com/photo-1547549082-6bc09f2049ae?w=600');
 
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms)
-VALUES (1, 'Hero', 'Splendor Plus', 60, 'MH02KL1122', 'MH02-2022-001122', 30000);
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (1, 'Hero', 'Splendor Plus', 60, 'MH02KL1122', 'MH02-2022-001122', 30000, 'https://images.unsplash.com/photo-1580310614729-ccd69652491d?w=600');
 
 -- ============================================================
 -- AVAILABILITY SLOTS (next 7 days)

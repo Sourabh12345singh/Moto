@@ -9,12 +9,20 @@ function BikeCard({ bike, onBook, hideBookButton = false, kycApproved = true }) 
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Bike Image Placeholder */}
-      <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-        <svg className="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-        </svg>
-      </div>
+      {/* Bike Image */}
+      {bike.imageUrl ? (
+        <img
+          src={bike.imageUrl}
+          alt={`${bike.company} ${bike.model}`}
+          className="h-48 w-full object-cover"
+        />
+      ) : (
+        <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+          <svg className="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </div>
+      )}
 
       <div className="p-5">
         {/* Bike Info */}

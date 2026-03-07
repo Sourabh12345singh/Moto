@@ -52,6 +52,7 @@ public class BikerAddingBikeDetailsService {
                 .bikeNumber(normalizedPlate)
                 .rcNumber(dto.getRcNumber()) // why rcNumber is string ???
                 .kms(dto.getKms())
+                .imageUrl(dto.getImageUrl())
                 .build();
 
         return bikeRepository.save(bike);

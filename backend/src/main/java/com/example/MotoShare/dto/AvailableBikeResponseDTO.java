@@ -18,5 +18,6 @@ public class AvailableBikeResponseDTO {
     private LocalDateTime startHour;
     private LocalDateTime endHour;
     private Long pricePerHour;
+    private String imageUrl;
 }
 
