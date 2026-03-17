@@ -1,54 +1,112 @@
 -- ============================================================
--- MotoShare Demo Seed Data
--- Password for demo accounts: demo123
--- BCrypt hash: $2a$10$IRIvS0OZN2NejfQkKVR1/eNmOsSY.cKtQ64.eSLtTd/RTYdzRbzdy
+-- MotoShare Production Seed Data
+-- Password for ALL accounts: Singh@123
+-- BCrypt hash: $2a$10$Vwu7ZIjg5.CtonE5Pe5KgumkimBWXKVkfZZhN8UtrSavCJ3q83NQC
 -- ============================================================
 
--- 1. Demo BIKER user (owns the demo bikes)
+-- ============================================================
+-- USERS (3 accounts)
+-- ============================================================
+
+-- User 1: ADMIN (Sourabh - app owner)
+INSERT INTO users (name, phone_no, email, password, role, kyc_status)
+VALUES (
+    'Sourabh Singh',
+    9999900001,
+    'sourabh20092004@gmail.com',
+    '$2a$10$Vwu7ZIjg5.CtonE5Pe5KgumkimBWXKVkfZZhN8UtrSavCJ3q83NQC',
+    'ADMIN',
+    'APPROVED'
+);
+
+-- User 2: BIKER (Rahul - owns all demo bikes)
 INSERT INTO users (name, phone_no, email, password, role, kyc_status)
 VALUES (
     'Rahul Sharma',
     9876543210,
     'rahul.biker@motoshare.com',
-    '$2a$10$IRIvS0OZN2NejfQkKVR1/eNmOsSY.cKtQ64.eSLtTd/RTYdzRbzdy',
+    '$2a$10$Vwu7ZIjg5.CtonE5Pe5KgumkimBWXKVkfZZhN8UtrSavCJ3q83NQC',
     'BIKER',
     'APPROVED'
 );
 
--- 2. Create biker entity for Rahul (user_id references the auto-generated ID above)
---    Since ddl-auto=create and this is the first user, user_id will be 1
+-- User 3: TAKER (Priya - demo taker who can book)
+INSERT INTO users (name, phone_no, email, password, role, kyc_status)
+VALUES (
+    'Priya Verma',
+    9876543211,
+    'priya.taker@motoshare.com',
+    '$2a$10$Vwu7ZIjg5.CtonE5Pe5KgumkimBWXKVkfZZhN8UtrSavCJ3q83NQC',
+    'TAKER',
+    'APPROVED'
+);
+
+-- ============================================================
+-- BIKER & TAKER ENTITIES (required for pre-approved KYC users)
+-- ============================================================
+
+-- Biker entity for Rahul (user_id = 2)
 INSERT INTO biker (user_id, rating, total_ratings)
-VALUES (1, 4.5, 12);
+VALUES (2, 4.5, 12);
+
+-- Taker entity for Priya (user_id = 3)
+INSERT INTO taker (user_id, rating, total_ratings)
+VALUES (3, 4.8, 5);
 
 -- ============================================================
--- DELHI BIKES (3 bikes)
--- ============================================================
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Honda', 'Activa 6G', 80, 'DL01AB1234', 'DL01-2023-001234', 12000, 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Royal Enfield', 'Classic 350', 150, 'DL05CD5678', 'DL05-2022-005678', 25000, 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Bajaj', 'Pulsar 150', 100, 'DL10EF9012', 'DL10-2024-009012', 8000, 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=600');
-
--- ============================================================
--- MUMBAI BIKES (3 bikes)
+-- DELHI BIKES (3 bikes) - biker_id = 2
 -- ============================================================
 
 INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'TVS', 'Jupiter 125', 70, 'MH01GH3456', 'MH01-2023-003456', 15000, 'https://images.unsplash.com/photo-1622185135505-2d795003994a?w=600');
+VALUES (2, 'Honda', 'Activa 6G', 80, 'DL01AB1234', 'DL01-2023-001234', 12000, 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600');
 
 INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Yamaha', 'R15 V4', 200, 'MH04IJ7890', 'MH04-2024-007890', 5000, 'https://images.unsplash.com/photo-1547549082-6bc09f2049ae?w=600');
+VALUES (2, 'Royal Enfield', 'Classic 350', 150, 'DL05CD5678', 'DL05-2022-005678', 25000, 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?w=600');
 
 INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Hero', 'Splendor Plus', 60, 'MH02KL1122', 'MH02-2022-001122', 30000, 'https://images.unsplash.com/photo-1580310614729-ccd69652491d?w=600');
+VALUES (2, 'Bajaj', 'Pulsar 150', 100, 'DL10EF9012', 'DL10-2024-009012', 8000, 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=600');
 
 -- ============================================================
--- AVAILABILITY SLOTS (next 7 days)
--- Using CURRENT_TIMESTAMP so dates are always relative to server start
+-- MUMBAI BIKES (3 bikes) - biker_id = 2
+-- ============================================================
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'TVS', 'Jupiter 125', 70, 'MH01GH3456', 'MH01-2023-003456', 15000, 'https://images.unsplash.com/photo-1622185135505-2d795003994a?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'Yamaha', 'R15 V4', 200, 'MH04IJ7890', 'MH04-2024-007890', 5000, 'https://images.unsplash.com/photo-1547549082-6bc09f2049ae?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'Hero', 'Splendor Plus', 60, 'MH02KL1122', 'MH02-2022-001122', 30000, 'https://images.unsplash.com/photo-1580310614729-ccd69652491d?w=600');
+
+-- ============================================================
+-- JAIPUR BIKES (7 bikes) - biker_id = 2
+-- ============================================================
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'Royal Enfield', 'Meteor 350', 140, 'RJ14AA1001', 'RJ14-2023-001001', 9500, 'https://images.unsplash.com/photo-1558981285-6f0c94958bb6?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'Honda', 'SP 125', 75, 'RJ14BB2002', 'RJ14-2024-002002', 6000, 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'Bajaj', 'Dominar 400', 180, 'RJ14CC3003', 'RJ14-2023-003003', 18000, 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'TVS', 'Apache RTR 160', 110, 'RJ14DD4004', 'RJ14-2024-004004', 11000, 'https://images.unsplash.com/photo-1558980664-769d59546b3d?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'Yamaha', 'FZ-S V3', 120, 'RJ14EE5005', 'RJ14-2023-005005', 14000, 'https://images.unsplash.com/photo-1525160354320-d8e92641c563?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'Hero', 'Xtreme 160R', 100, 'RJ14FF6006', 'RJ14-2024-006006', 7500, 'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?w=600');
+
+INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
+VALUES (2, 'KTM', 'Duke 200', 220, 'RJ14GG7007', 'RJ14-2023-007007', 20000, 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=600');
+
+-- ============================================================
+-- AVAILABILITY SLOTS (20 slots across next 7 days)
+-- Using CURRENT_TIMESTAMP so dates are always relative to when seeded
 -- ============================================================
 
 -- Delhi: Honda Activa 6G (bike_id = 1)
@@ -116,35 +174,6 @@ VALUES (gen_random_uuid(), 6,
     CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '6 hours',
     CURRENT_TIMESTAMP + INTERVAL '1 day' + INTERVAL '18 hours',
     60, true, 'Mumbai', 'Dadar Station East');
-
--- ============================================================
--- JAIPUR BIKES (7 bikes)
--- ============================================================
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Royal Enfield', 'Meteor 350', 140, 'RJ14AA1001', 'RJ14-2023-001001', 9500, 'https://images.unsplash.com/photo-1558981285-6f0c94958bb6?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Honda', 'SP 125', 75, 'RJ14BB2002', 'RJ14-2024-002002', 6000, 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Bajaj', 'Dominar 400', 180, 'RJ14CC3003', 'RJ14-2023-003003', 18000, 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'TVS', 'Apache RTR 160', 110, 'RJ14DD4004', 'RJ14-2024-004004', 11000, 'https://images.unsplash.com/photo-1558980664-769d59546b3d?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Yamaha', 'FZ-S V3', 120, 'RJ14EE5005', 'RJ14-2023-005005', 14000, 'https://images.unsplash.com/photo-1525160354320-d8e92641c563?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'Hero', 'Xtreme 160R', 100, 'RJ14FF6006', 'RJ14-2024-006006', 7500, 'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?w=600');
-
-INSERT INTO bikes (biker_id, company, model, rate_per_hour, bike_number, rc_number, kms, image_url)
-VALUES (1, 'KTM', 'Duke 200', 220, 'RJ14GG7007', 'RJ14-2023-007007', 20000, 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=600');
-
--- ============================================================
--- JAIPUR AVAILABILITY SLOTS
--- ============================================================
 
 -- Jaipur: Royal Enfield Meteor 350 (bike_id = 7)
 INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
