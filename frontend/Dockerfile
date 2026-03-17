@@ -4,11 +4,13 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install
 
-# Pass Cloudinary env vars at build time (Vite embeds VITE_* vars during build)
+# Pass env vars at build time (Vite embeds VITE_* vars during build)
 ARG VITE_CLOUDINARY_CLOUD_NAME
 ARG VITE_CLOUDINARY_UPLOAD_PRESET
+ARG VITE_API_URL=https://motoshare-backend.onrender.com/api
 ENV VITE_CLOUDINARY_CLOUD_NAME=$VITE_CLOUDINARY_CLOUD_NAME
 ENV VITE_CLOUDINARY_UPLOAD_PRESET=$VITE_CLOUDINARY_UPLOAD_PRESET
+ENV VITE_API_URL=$VITE_API_URL
 
 COPY . .
 RUN npm run build
@@ -17,10 +19,7 @@ RUN npm run build
 FROM nginx:alpine
 # Copy built files to nginx
 COPY --from=build /app/dist /usr/share/nginx/html
-# Copy nginx config as a template (uses $BACKEND_URL variable)
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy nginx config (no envsubst needed — API calls go directly to backend)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
-# nginx:alpine image auto-processes /etc/nginx/templates/*.template with envsubst
-# Set default backend URL for local Docker Compose usage
-ENV BACKEND_URL=http://backend:8080
 CMD ["nginx", "-g", "daemon off;"]

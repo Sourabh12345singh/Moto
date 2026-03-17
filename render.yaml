@@ -48,7 +48,7 @@ services:
       - key: MAIL_PASSWORD
         sync: false
       - key: FRONTEND_URL
-        value: https://motoshare-frontend.onrender.com
+        value: https://motoshare-frontend-3s89.onrender.com
       - key: DB_SSLMODE
         value: require
       - key: SHOW_SQL
@@ -62,8 +62,8 @@ services:
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
     envVars:
-      - key: BACKEND_URL
-        value: https://motoshare-backend.onrender.com
+      - key: VITE_API_URL
+        value: https://motoshare-backend.onrender.com/api
       - key: VITE_CLOUDINARY_CLOUD_NAME
         sync: false
       - key: VITE_CLOUDINARY_UPLOAD_PRESET

@@ -44,13 +44,12 @@ services:
       args:
         VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME:-drgrb8k9t}
         VITE_CLOUDINARY_UPLOAD_PRESET: ${VITE_CLOUDINARY_UPLOAD_PRESET:-motoshare_kyc}
+        VITE_API_URL: http://localhost:8081/api
     image: sourabhsinghrathore/motoshare-frontend
     container_name: motoshare-frontend
     restart: unless-stopped
     ports:
       - "80:80"
-    environment:
-      BACKEND_URL: http://backend:8080
     depends_on:
       - backend
 
