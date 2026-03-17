@@ -16,7 +16,7 @@ import axios from "axios";
 // All requests will be prefixed with '/api' (e.g., '/auth/login' becomes '/api/auth/login')
 // The Vite proxy (vite.config.js) forwards '/api' requests to the backend (localhost:8080)
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   headers: {
     "Content-Type": "application/json", // All requests send JSON data
   },

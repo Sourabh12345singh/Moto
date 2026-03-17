@@ -1,0 +1,58 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: motoshare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-Bike_}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build: ./backend
+    image: sourabhsinghrathore/motoshare-backend
+    container_name: motoshare-backend
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-Bike_}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # React Frontend (served by nginx)
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME:-drgrb8k9t}
+        VITE_CLOUDINARY_UPLOAD_PRESET: ${VITE_CLOUDINARY_UPLOAD_PRESET:-motoshare_kyc}
+    image: sourabhsinghrathore/motoshare-frontend
+    container_name: motoshare-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      BACKEND_URL: http://backend:8080
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

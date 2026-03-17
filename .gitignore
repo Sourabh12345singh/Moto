@@ -1,6 +1,9 @@
 # Root level
 backend00/
 
+# Docker secrets
+.env
+
 # OS
 .DS_Store
 Thumbs.db
