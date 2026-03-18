@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -19,6 +20,9 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
 
     @Async
@@ -32,6 +36,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(takerEmail);
+            helper.setFrom(fromEmail);
             helper.setSubject("MotoShare - Booking Confirmed!");
             helper.setText(
                     "<div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto'>"
@@ -77,6 +82,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(bikerEmail);
+            helper.setFrom(fromEmail);
             helper.setSubject("MotoShare - New Booking for Your Bike!");
             helper.setText(
                     "<div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto'>"

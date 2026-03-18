@@ -11,6 +11,7 @@ import com.example.MotoShare.repository.BikeRepository;
 import com.example.MotoShare.repository.BookingRepository;
 import com.example.MotoShare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookBikeService {
 
     private final AvailabilitySlotRepository availabilitySlotRepository;
@@ -154,7 +156,8 @@ public class BookBikeService {
                 );
             }
         } catch (Exception e) {
-            // Email failure should never break the booking
+            // Email failure should never break the booking, but log it
+            log.warn("Failed to send booking notification emails: {}", e.getMessage());
         }
     }
 
