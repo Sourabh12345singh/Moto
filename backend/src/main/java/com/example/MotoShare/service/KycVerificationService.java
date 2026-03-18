@@ -6,10 +6,12 @@ import com.example.MotoShare.repository.TakerRepository;
 import com.example.MotoShare.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class KycVerificationService {
 
     private final UserRepository userRepository;
@@ -18,15 +20,19 @@ public class KycVerificationService {
 
     @Transactional
     public void onKycVerified(Long userId) {
+        log.info("Processing KYC verification for userId: {}", userId);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (user.getKycStatus() != KycStatus.APPROVED) {
-            throw new RuntimeException("KYC not verified");
-        }
-        else if(user.getKycStatus() == KycStatus.REJECTED){
+        if (user.getKycStatus() == KycStatus.REJECTED) {
+            log.warn("KYC is rejected for userId: {}, cannot create role entity", userId);
             throw new RuntimeException("KYC is rejected, cannot create role entity");
+        }
+        
+        if (user.getKycStatus() != KycStatus.APPROVED) {
+            log.warn("KYC not approved for userId: {}, status: {}", userId, user.getKycStatus());
+            throw new RuntimeException("KYC not verified");
         }
 
         if (user.getRole() == Role.BIKER) {
@@ -34,6 +40,9 @@ public class KycVerificationService {
                 Biker biker = new Biker();
                 biker.setUser(user);
                 bikerRepository.save(biker);
+                log.info("Created Biker entity for userId: {}", userId);
+            } else {
+                log.info("Biker entity already exists for userId: {}", userId);
             }
         }
 
@@ -42,6 +51,9 @@ public class KycVerificationService {
                 Taker taker = new Taker();
                 taker.setUser(user);
                 takerRepository.save(taker);
+                log.info("Created Taker entity for userId: {}", userId);
+            } else {
+                log.info("Taker entity already exists for userId: {}", userId);
             }
         }
     }
