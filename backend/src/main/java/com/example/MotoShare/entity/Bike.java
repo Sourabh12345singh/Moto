@@ -2,6 +2,7 @@ package com.example.MotoShare.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Check;
 
 @Entity
 @Table(
@@ -15,6 +16,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Check(constraints = "rate_per_hour > 0 AND kms >= 0")
 public class Bike {
 
     @Id
@@ -46,4 +48,3 @@ public class Bike {
     @Column(name = "image_url")
     private String imageUrl;
 }
-

@@ -12,11 +12,14 @@ import axios from "axios";
  * This ensures consistent error handling and automatic token attachment.
  */
 
-// Create axios instance with base configuration
-// All requests will be prefixed with '/api' (e.g., '/auth/login' becomes '/api/auth/login')
-// The Vite proxy (vite.config.js) forwards '/api' requests to the backend (localhost:8080)
+// Create axios instance with base configuration.
+// Use an absolute default API URL so production builds never silently fall back to same-origin '/api'.
+const API_BASE_URL =
+  (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) ||
+  "http://localhost:8080/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json", // All requests send JSON data
   },

@@ -3,7 +3,6 @@ package com.example.MotoShare.controller;
 import com.example.MotoShare.dto.AvailableBikeResponseDTO;
 import com.example.MotoShare.dto.BookBikeRequestDto;
 import com.example.MotoShare.dto.BookingResponseDto;
-import com.example.MotoShare.dto.CreateUserRequestDto;
 import com.example.MotoShare.entity.User;
 import com.example.MotoShare.service.AvailabilitySlotService;
 import com.example.MotoShare.service.BookBikeService;
@@ -25,20 +24,8 @@ public class UserController {
     private final BookBikeService bookBikeService;
     private final UserService userService;
 
-    // Create user
-    @PostMapping
-    public ResponseEntity<String> createUser(
-            @RequestBody CreateUserRequestDto dto
-    ) {
-        userService.createUser(dto);
-        return ResponseEntity.ok("User created successfully");
-    }
-
-    // Get current user's status (kycStatus, role, name) - for frontend refresh without re-login
     @GetMapping("/me/status")
     public ResponseEntity<Map<String, Object>> getMyStatus(@AuthenticationPrincipal User user) {
-
-        // Fetch fresh data from DB (the @AuthenticationPrincipal user may be stale)
         User freshUser = userService.getUserByEmail(user.getEmail());
 
         Map<String, Object> status = Map.of(
@@ -52,14 +39,12 @@ public class UserController {
         return ResponseEntity.ok(status);
     }
 
-    // See all available bikes by city (next 7 days)
     @GetMapping("/bikes")
     public List<AvailableBikeResponseDTO> getAvailableBikes(
             @RequestParam String city) {
-        return availabilitySlotService.getAvailableSlots(city) ;//why error here , because return type is different
+        return availabilitySlotService.getAvailableSlots(city);
     }
 
-    // Book a bike
     @PostMapping("/book")
     public ResponseEntity<String> bookBike(
             @RequestBody BookBikeRequestDto dto,
@@ -74,7 +59,6 @@ public class UserController {
         return ResponseEntity.ok("Booking confirmed successfully!");
     }
 
-    // Get current user's bookings (for TAKER "My Bookings" page)
     @GetMapping("/my-bookings")
     public ResponseEntity<List<BookingResponseDto>> getMyBookings(
             @AuthenticationPrincipal User user
@@ -82,7 +66,4 @@ public class UserController {
         List<BookingResponseDto> bookings = bookBikeService.getBookingsForUser(user.getUserId());
         return ResponseEntity.ok(bookings);
     }
-
-
 }
-

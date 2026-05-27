@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findByUserIdOrderByStartTimeDesc(Long userId);
+    List<Booking> findByUser_UserIdOrderByStartTimeDesc(Long userId);
 
-    List<Booking> findByBikeIdInOrderByStartTimeDesc(List<Long> bikeIds);
+    List<Booking> findByBike_BikeIdInOrderByStartTimeDesc(List<Long> bikeIds);
 }

@@ -7,7 +7,8 @@ RUN npm install
 # Pass env vars at build time (Vite embeds VITE_* vars during build)
 ARG VITE_CLOUDINARY_CLOUD_NAME
 ARG VITE_CLOUDINARY_UPLOAD_PRESET
-ARG VITE_API_URL=https://motoshare-backend.onrender.com/api
+# ARG VITE_API_URL=https://motoshare-backend.onrender.com/api
+ARG VITE_API_URL
 ENV VITE_CLOUDINARY_CLOUD_NAME=$VITE_CLOUDINARY_CLOUD_NAME
 ENV VITE_CLOUDINARY_UPLOAD_PRESET=$VITE_CLOUDINARY_UPLOAD_PRESET
 ENV VITE_API_URL=$VITE_API_URL

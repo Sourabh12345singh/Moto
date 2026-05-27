@@ -25,11 +25,12 @@ services:
     container_name: motoshare-backend
     restart: unless-stopped
     ports:
-      - "8081:8080"
+      - "8080:8080"
     environment:
       DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-Bike_}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD}
+      FRONTEND_URLS: "http://localhost,http://localhost:3000"
       JWT_SECRET: ${JWT_SECRET}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
@@ -44,7 +45,7 @@ services:
       args:
         VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME:-drgrb8k9t}
         VITE_CLOUDINARY_UPLOAD_PRESET: ${VITE_CLOUDINARY_UPLOAD_PRESET:-motoshare_kyc}
-        VITE_API_URL: http://localhost:8081/api
+        VITE_API_URL: http://localhost:8080/api
     image: sourabhsinghrathore/motoshare-frontend
     container_name: motoshare-frontend
     restart: unless-stopped

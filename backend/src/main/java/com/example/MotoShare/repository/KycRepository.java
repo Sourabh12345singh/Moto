@@ -9,15 +9,9 @@ import java.util.Optional;
 
 public interface KycRepository extends JpaRepository<Kyc, Long> {
 
-    // find
     Optional<Kyc> findByUserId(Long userId);
 
-    // find all by status (for admin pending list)
     List<Kyc> findByStatus(KycStatus status);
 
-    // delete (BEST for reject)
     void deleteByUserId(Long userId);
-
-    // optional safety
-    boolean existsByUserId(Long userId);
 }

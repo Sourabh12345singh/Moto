@@ -10,6 +10,7 @@ import com.example.MotoShare.repository.AvailabilitySlotRepository;
 import com.example.MotoShare.repository.BikeRepository;
 import com.example.MotoShare.repository.BookingRepository;
 import com.example.MotoShare.repository.UserRepository;
+import com.example.MotoShare.service.notification.NotificationStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class BookBikeService {
     private final BookingRepository bookingRepository;
     private final BikeRepository bikeRepository;
     private final UserRepository userRepository;
-    private final EmailService emailService;
+    private final List<NotificationStrategy> notificationStrategies;
 
     private static final int BUFFER_MINUTES = 30;
     private static final int MIN_BOOKING_HOURS = 1;
@@ -51,8 +52,8 @@ public class BookBikeService {
             throw new RuntimeException("KYC verification required before booking. Please complete your KYC.");
         }
 
-        // 1. Fetch slot
-        AvailabilitySlot slot = availabilitySlotRepository.findById(slotId)
+        // 1. Fetch slot (uses Pessimistic Write Lock to prevent race conditions / double bookings)
+        AvailabilitySlot slot = availabilitySlotRepository.findByIdForUpdate(slotId)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
         // 2. Check availability
@@ -79,9 +80,9 @@ public class BookBikeService {
 
         // 6. Create booking
         Booking booking = new Booking();
-        booking.setBikeId(slot.getBike().getBikeId());
-        booking.setUserId(userId);
-        booking.setSlotId(slotId);
+        booking.setBike(slot.getBike());
+        booking.setUser(bookingUser);
+        booking.setSlot(slot);
         booking.setStartTime(startTime);
         booking.setEndTime(endTime);
 
@@ -127,37 +128,24 @@ public class BookBikeService {
             availabilitySlotRepository.save(postSlot);
         }
 
-        // 9. Send email notifications (async -- won't block the booking response)
+        // 9. Dispatch notifications via all active Notification Strategies (Strategy Pattern / Open-Closed Principle)
         try {
+            User taker = bookingUser;
             Bike bike = slot.getBike();
-            String bikeName = bike.getCompany() + " " + bike.getModel();
+            User biker = bike.getBiker().getUser();
 
-            // Taker email
-            User taker = userRepository.findById(userId)
-                    .orElse(null);
-            if (taker != null) {
-                emailService.sendBookingConfirmationToTaker(
-                        taker.getEmail(), taker.getName(),
-                        bikeName, slot.getCity(), slot.getPickupLocation(),
-                        startTime, endTime, booking.getTotalPrice()
-                );
-            }
-
-            // Biker email
-            User bikerUser = bike.getBiker().getUser();
-            if (bikerUser != null) {
-                emailService.sendBookingNotificationToBiker(
-                        bikerUser.getEmail(), bikerUser.getName(),
-                        bikeName,
-                        taker != null ? taker.getName() : "A rider",
-                        taker != null ? taker.getEmail() : "",
-                        slot.getCity(), slot.getPickupLocation(),
-                        startTime, endTime, booking.getTotalPrice()
-                );
+            if (taker != null && biker != null) {
+                for (NotificationStrategy strategy : notificationStrategies) {
+                    try {
+                        strategy.sendBookingConfirmation(taker, bike, slot, booking);
+                        strategy.sendBookingNotification(biker, taker, bike, slot, booking);
+                    } catch (Exception e) {
+                        log.error("Notification strategy {} failed: {}", strategy.getClass().getSimpleName(), e.getMessage());
+                    }
+                }
             }
         } catch (Exception e) {
-            // Email failure should never break the booking, but log it
-            log.warn("Failed to send booking notification emails: {}", e.getMessage());
+            log.warn("Failed to dispatch booking notifications: {}", e.getMessage());
         }
     }
 
@@ -165,7 +153,7 @@ public class BookBikeService {
      * Get all bookings for a TAKER user.
      */
     public List<BookingResponseDto> getBookingsForUser(Long userId) {
-        List<Booking> bookings = bookingRepository.findByUserIdOrderByStartTimeDesc(userId);
+        List<Booking> bookings = bookingRepository.findByUser_UserIdOrderByStartTimeDesc(userId);
         return bookings.stream()
                 .map(this::toBookingResponseDto)
                 .collect(Collectors.toList());
@@ -182,27 +170,20 @@ public class BookBikeService {
         List<Long> bikeIds = bikes.stream()
                 .map(Bike::getBikeId)
                 .collect(Collectors.toList());
-        List<Booking> bookings = bookingRepository.findByBikeIdInOrderByStartTimeDesc(bikeIds);
+        List<Booking> bookings = bookingRepository.findByBike_BikeIdInOrderByStartTimeDesc(bikeIds);
         return bookings.stream()
                 .map(this::toBookingResponseDto)
                 .collect(Collectors.toList());
     }
 
     private BookingResponseDto toBookingResponseDto(Booking booking) {
-        Bike bike = bikeRepository.findById(booking.getBikeId()).orElse(null);
+        Bike bike = booking.getBike();
+        AvailabilitySlot slot = booking.getSlot();
 
-        // Fetch slot info for city/pickupLocation
-        String city = "";
-        String pickupLocation = "";
-        Long pricePerHour = 0L;
-        if (booking.getSlotId() != null) {
-            AvailabilitySlot slot = availabilitySlotRepository.findById(booking.getSlotId()).orElse(null);
-            if (slot != null) {
-                city = slot.getCity();
-                pickupLocation = slot.getPickupLocation();
-                pricePerHour = slot.getPricePerHour();
-            }
-        }
+        // Fetch slot info directly from relationship (prevents N+1 database queries)
+        String city = slot != null ? slot.getCity() : "";
+        String pickupLocation = slot != null ? slot.getPickupLocation() : "";
+        Long pricePerHour = slot != null ? slot.getPricePerHour() : 0L;
 
         long durationMinutes = Duration.between(booking.getStartTime(), booking.getEndTime()).toMinutes();
         long durationHours = (long) Math.ceil(durationMinutes / 60.0);
