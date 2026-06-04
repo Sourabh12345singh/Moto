@@ -16,6 +16,7 @@ import java.util.List;
 public class AvailabilitySlotService {
 
     private final AvailabilitySlotRepository availabilitySlotRepository;
+    private final AvailabilitySlotMapper availabilitySlotMapper;
 
     /**
      * WHY @Transactional(readOnly = true)?
@@ -33,6 +34,6 @@ public class AvailabilitySlotService {
                 city, now, maxDate
         );
 
-        return AvailabilitySlotMapper.toDtoList(list);
+        return availabilitySlotMapper.toDtoList(list);
     }
 }

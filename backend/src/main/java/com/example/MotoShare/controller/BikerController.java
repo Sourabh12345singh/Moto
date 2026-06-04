@@ -4,6 +4,7 @@ import com.example.MotoShare.dto.AddAvailabilitySlotDto;
 import com.example.MotoShare.dto.AddBikeRequestDto;
 import com.example.MotoShare.dto.BookingResponseDto;
 import com.example.MotoShare.entity.User;
+import com.example.MotoShare.service.AvailabilitySlotService;
 import com.example.MotoShare.service.BikeAddinginSlotService;
 import com.example.MotoShare.service.BikerAddingBikeDetailsService;
 import com.example.MotoShare.service.BookBikeService;

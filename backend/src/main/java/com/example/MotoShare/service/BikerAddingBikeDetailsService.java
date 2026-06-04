@@ -1,6 +1,5 @@
 package com.example.MotoShare.service;
 
-
 import com.example.MotoShare.dto.AddBikeRequestDto;
 import com.example.MotoShare.dto.BikerBikeResponseDto;
 import com.example.MotoShare.entity.Bike;
@@ -9,6 +8,8 @@ import com.example.MotoShare.entity.KycStatus;
 import com.example.MotoShare.entity.Role;
 import com.example.MotoShare.entity.User;
 import com.example.MotoShare.entity.AvailabilitySlot;
+import com.example.MotoShare.error.BusinessRuleException;
+import com.example.MotoShare.error.ResourceNotFoundException;
 import com.example.MotoShare.repository.BikeRepository;
 import com.example.MotoShare.repository.BikerRepository;
 import com.example.MotoShare.repository.UserRepository;
@@ -39,7 +40,7 @@ public class BikerAddingBikeDetailsService {
                 dto.getBikeNumber().toUpperCase().replaceAll("\\s+", "");
 
         if (bikeRepository.existsByBikeNumber(normalizedPlate)) {
-            throw new RuntimeException("Bike with this number plate already exists");
+            throw new BusinessRuleException("Bike with this number plate already exists");
         }
 
         // Try to find existing Biker entity
@@ -50,14 +51,14 @@ public class BikerAddingBikeDetailsService {
             log.warn("Biker entity not found for userId: {}. Attempting to create...", bikerId);
             
             User user = userRepository.findById(bikerId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User", bikerId));
             
             // Validate user is a BIKER with approved KYC
             if (user.getRole() != Role.BIKER) {
-                throw new RuntimeException("User is not a BIKER");
+                throw new BusinessRuleException("User is not a BIKER. Role: " + user.getRole());
             }
             if (user.getKycStatus() != KycStatus.APPROVED) {
-                throw new RuntimeException("Complete KYC verification before adding bikes");
+                throw new BusinessRuleException("Complete KYC verification before adding bikes. Status: " + user.getKycStatus());
             }
             
             // Create Biker entity (this was missed during KYC approval)
@@ -69,7 +70,7 @@ public class BikerAddingBikeDetailsService {
 
         // Validate RC number
         if (dto.getRcNumber() == null || dto.getRcNumber().trim().isEmpty()) {
-            throw new RuntimeException("RC Number cannot be null or empty");
+            throw new BusinessRuleException("RC Number cannot be null or empty");
         }
 
         Bike bike = Bike.builder()

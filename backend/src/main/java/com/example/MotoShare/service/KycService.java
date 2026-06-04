@@ -4,6 +4,8 @@ import com.example.MotoShare.dto.SubmitKycDto;
 import com.example.MotoShare.entity.Kyc;
 import com.example.MotoShare.entity.KycStatus;
 import com.example.MotoShare.entity.User;
+import com.example.MotoShare.error.BusinessRuleException;
+import com.example.MotoShare.error.ResourceNotFoundException;
 import com.example.MotoShare.repository.KycRepository;
 import com.example.MotoShare.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,11 +23,11 @@ public class KycService {
     public void submitKyc(Long userId, SubmitKycDto dto) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         // Only allow submission if NOT_SUBMITTED or REJECTED (resubmission after rejection)
         if (user.getKycStatus() != KycStatus.NOT_SUBMITTED && user.getKycStatus() != KycStatus.REJECTED) {
-            throw new RuntimeException("KYC already submitted");
+            throw new BusinessRuleException("KYC already submitted. Current status: " + user.getKycStatus());
         }
 
         // 1️⃣ Save KYC
@@ -42,10 +44,5 @@ public class KycService {
         // 2️⃣ Update USER table
         user.setKycStatus(KycStatus.PENDING);
         userRepository.save(user);
-
-
     }
-
-
 }
-

@@ -1,6 +1,8 @@
 package com.example.MotoShare.service;
 
 import com.example.MotoShare.entity.*;
+import com.example.MotoShare.error.BusinessRuleException;
+import com.example.MotoShare.error.ResourceNotFoundException;
 import com.example.MotoShare.repository.BikerRepository;
 import com.example.MotoShare.repository.TakerRepository;
 import com.example.MotoShare.repository.UserRepository;
@@ -23,16 +25,16 @@ public class KycVerificationService {
         log.info("Processing KYC verification for userId: {}", userId);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         if (user.getKycStatus() == KycStatus.REJECTED) {
             log.warn("KYC is rejected for userId: {}, cannot create role entity", userId);
-            throw new RuntimeException("KYC is rejected, cannot create role entity");
+            throw new BusinessRuleException("KYC is rejected, cannot create role profile");
         }
         
         if (user.getKycStatus() != KycStatus.APPROVED) {
             log.warn("KYC not approved for userId: {}, status: {}", userId, user.getKycStatus());
-            throw new RuntimeException("KYC not verified");
+            throw new BusinessRuleException("KYC not verified yet. Current status: " + user.getKycStatus());
         }
 
         if (user.getRole() == Role.BIKER) {
@@ -58,4 +60,3 @@ public class KycVerificationService {
         }
     }
 }
-
