@@ -41,6 +41,14 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- Bean Validation (WHY: enables @Valid, @NotBlank, @Email on DTOs.
+             Without this dependency, the annotations compile but are SILENTLY IGNORED at runtime.
+             Spring Boot auto-configures the validator when this starter is on the classpath.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
         <!-- Devtools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

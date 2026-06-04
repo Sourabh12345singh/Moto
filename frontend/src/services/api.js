@@ -223,8 +223,8 @@ export const bikerAPI = {
    */
   addSlot: async (bikeId, slotData) => {
     const response = await api.post(`/biker/bike/${bikeId}/slot`, {
-      StartTime: slotData.startTime,
-      EndTime: slotData.endTime,
+      startTime: slotData.startTime,
+      endTime: slotData.endTime,
       pricePerHour: slotData.pricePerHour,
       city: slotData.city,
       pickupLocation: slotData.pickupLocation,
@@ -241,6 +241,18 @@ export const bikerAPI = {
    */
   getMyBookings: async () => {
     const response = await api.get("/biker/my-bookings");
+    return response.data;
+  },
+
+  /**
+   * Get all bikes listed by this biker.
+   *
+   * @returns Array of BikerBikeResponseDto objects
+   *
+   * Endpoint: GET /api/biker/my-bikes
+   */
+  getMyBikes: async () => {
+    const response = await api.get("/biker/my-bikes");
     return response.data;
   },
 };

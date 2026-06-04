@@ -38,6 +38,20 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private KycStatus kycStatus = KycStatus.NOT_SUBMITTED;
 
+    /**
+     * WHY @Version on User?
+     *
+     * Scenario: Admin A opens KYC review for user #5 and approves.
+     * Admin B loaded the same page earlier and clicks "reject."
+     * Without @Version, B's stale write silently overwrites A's approval.
+     *
+     * With @Version, JPA detects the mismatch and throws OptimisticLockException.
+     * Our GlobalExceptionHandler catches it and returns HTTP 409:
+     * "This record was modified by another user. Please refresh."
+     */
+    @Version
+    private Long version;
+
     // ===== Spring Security methods =====
 
     @Override

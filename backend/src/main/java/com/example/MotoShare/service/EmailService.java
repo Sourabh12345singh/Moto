@@ -2,7 +2,6 @@ package com.example.MotoShare.service;
 
 import com.example.MotoShare.entity.FailedNotification;
 import com.example.MotoShare.repository.FailedNotificationRepository;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

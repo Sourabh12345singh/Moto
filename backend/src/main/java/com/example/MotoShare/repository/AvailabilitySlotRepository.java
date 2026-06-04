@@ -39,4 +39,8 @@ public interface AvailabilitySlotRepository extends JpaRepository<AvailabilitySl
     @Query("SELECT a FROM AvailabilitySlot a WHERE a.id = :slotId")
     Optional<AvailabilitySlot> findByIdForUpdate(@Param("slotId") UUID slotId);
 
+    /**
+     * Retrieve all availability slots (both available and booked/cancelled) for a specific bike.
+     */
+    List<AvailabilitySlot> findByBikeBikeId(Long bikeId);
 }

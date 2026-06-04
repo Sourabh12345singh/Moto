@@ -1,11 +1,9 @@
 package com.example.MotoShare.service;
 
 import com.example.MotoShare.dto.BookingResponseDto;
-import com.example.MotoShare.entity.AvailabilitySlot;
-import com.example.MotoShare.entity.Bike;
-import com.example.MotoShare.entity.Booking;
-import com.example.MotoShare.entity.KycStatus;
-import com.example.MotoShare.entity.User;
+import com.example.MotoShare.entity.*;
+import com.example.MotoShare.error.BusinessRuleException;
+import com.example.MotoShare.error.ResourceNotFoundException;
 import com.example.MotoShare.repository.AvailabilitySlotRepository;
 import com.example.MotoShare.repository.BikeRepository;
 import com.example.MotoShare.repository.BookingRepository;
@@ -36,6 +34,7 @@ public class BookBikeService {
     private static final int BUFFER_MINUTES = 30;
     private static final int MIN_BOOKING_HOURS = 1;
     private static final int MIN_REMAINING_SLOT_MINUTES = 60; // 1 hour minimum for a leftover slot
+    private static final int MIN_CANCEL_MINUTES_BEFORE_START = 60; // Can't cancel within 1 hour of start
 
     @Transactional
     public void bookBike(
@@ -46,45 +45,62 @@ public class BookBikeService {
     ) {
 
         // 0. KYC enforcement -- user must be APPROVED before booking
+        /*
+         * WHY check KYC first, before locking the slot?
+         * Because acquiring a pessimistic lock is EXPENSIVE (blocks other threads).
+         * If the user isn't even KYC-approved, we should fail FAST without wasting
+         * a database lock. Always put cheap checks before expensive ones.
+         */
         User bookingUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         if (bookingUser.getKycStatus() != KycStatus.APPROVED) {
-            throw new RuntimeException("KYC verification required before booking. Please complete your KYC.");
+            throw new BusinessRuleException("KYC verification required before booking. Please complete your KYC.");
         }
 
         // 1. Fetch slot (uses Pessimistic Write Lock to prevent race conditions / double bookings)
+        /*
+         * WHY PESSIMISTIC_WRITE here?
+         * This is the heart of our concurrency control. SELECT FOR UPDATE locks
+         * this specific row in PostgreSQL. Any other transaction trying to read
+         * or modify this same slot BLOCKS until we commit or rollback.
+         *
+         * Without this: 50 threads all see isAvailable=true and create 50 bookings.
+         * With this: Thread 1 locks the row, creates 1 booking, sets isAvailable=false.
+         *            Threads 2-50 wait, then see isAvailable=false and throw BusinessRuleException.
+         */
         AvailabilitySlot slot = availabilitySlotRepository.findByIdForUpdate(slotId)
-                .orElseThrow(() -> new RuntimeException("Slot not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Availability Slot", slotId));
 
         // 2. Check availability
         if (!Boolean.TRUE.equals(slot.getIsAvailable())) {
-            throw new RuntimeException("Slot is no longer available");
+            throw new BusinessRuleException("Slot is no longer available");
         }
 
         // 3. Validate: booking times must be within slot window
         if (startTime.isBefore(slot.getStartHour()) || endTime.isAfter(slot.getEndHour())) {
-            throw new RuntimeException("Booking times must be within the available slot window ("
+            throw new BusinessRuleException("Booking times must be within the available slot window ("
                     + slot.getStartHour() + " to " + slot.getEndHour() + ")");
         }
 
         // 4. Validate: start must be before end
         if (!startTime.isBefore(endTime)) {
-            throw new RuntimeException("Start time must be before end time");
+            throw new BusinessRuleException("Start time must be before end time");
         }
 
         // 5. Validate: minimum 1 hour booking
         long bookingMinutes = Duration.between(startTime, endTime).toMinutes();
         if (bookingMinutes < MIN_BOOKING_HOURS * 60) {
-            throw new RuntimeException("Minimum booking duration is " + MIN_BOOKING_HOURS + " hour(s)");
+            throw new BusinessRuleException("Minimum booking duration is " + MIN_BOOKING_HOURS + " hour(s)");
         }
 
-        // 6. Create booking
+        // 6. Create booking with CONFIRMED status
         Booking booking = new Booking();
         booking.setBike(slot.getBike());
         booking.setUser(bookingUser);
         booking.setSlot(slot);
         booking.setStartTime(startTime);
         booking.setEndTime(endTime);
+        booking.setStatus(BookingStatus.CONFIRMED);
 
         long hours = (long) Math.ceil(bookingMinutes / 60.0);
         booking.setTotalPrice(hours * slot.getPricePerHour());
@@ -150,8 +166,90 @@ public class BookBikeService {
     }
 
     /**
-     * Get all bookings for a TAKER user.
+     * Cancel an existing booking and restore the slot to available.
+     *
+     * WHY is cancellation a separate transactional method with its own pessimistic lock?
+     *
+     * 1. We need to prevent double-cancellation (user clicks cancel twice quickly).
+     *    The PESSIMISTIC_WRITE lock on booking ensures only one thread processes it.
+     *
+     * 2. We need to restore the original slot to "available" so other users can book it.
+     *    This must happen atomically within the same transaction as the status change.
+     *    If we set status=CANCELLED but crash before restoring the slot, the slot is
+     *    permanently lost. @Transactional ensures both happen or neither happens.
+     *
+     * 3. We enforce a business rule: no cancellation within 1 hour of ride start.
+     *    This protects bikers who have already traveled to the pickup location.
      */
+    @Transactional
+    public void cancelBooking(Long bookingId, Long userId) {
+
+        // Lock the booking row to prevent concurrent cancel/modify race conditions
+        Booking booking = bookingRepository.findByIdForUpdate(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking", bookingId));
+
+        // Verify ownership — users can only cancel their own bookings
+        if (!booking.getUser().getUserId().equals(userId)) {
+            throw new BusinessRuleException("You can only cancel your own bookings");
+        }
+
+        // Verify the booking is in a cancellable state
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new BusinessRuleException("Only CONFIRMED bookings can be cancelled. Current status: " + booking.getStatus());
+        }
+
+        // Enforce cancellation window: must be at least 1 hour before ride start
+        /*
+         * WHY this restriction?
+         * If the biker has already traveled to the pickup location (Connaught Place, Gate 2),
+         * a last-second cancellation wastes their time and fuel. Real platforms (Uber, Ola)
+         * charge cancellation fees for late cancellations. We block them entirely for simplicity.
+         */
+        long minutesUntilStart = Duration.between(LocalDateTime.now(), booking.getStartTime()).toMinutes();
+        if (minutesUntilStart < MIN_CANCEL_MINUTES_BEFORE_START) {
+            throw new BusinessRuleException(
+                    "Cannot cancel within " + MIN_CANCEL_MINUTES_BEFORE_START + " minutes of ride start time"
+            );
+        }
+
+        // Perform cancellation
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setCancelledAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+
+        // Restore the original slot to available
+        /*
+         * WHY restore the slot?
+         * Without this, a cancelled booking's slot stays permanently locked.
+         * No other user can ever book that time window again.
+         * This is the "slot recovery" part of the cancellation lifecycle.
+         */
+        AvailabilitySlot slot = booking.getSlot();
+        slot.setIsAvailable(true);
+        availabilitySlotRepository.save(slot);
+
+        log.info("Booking {} cancelled by user {}. Slot {} restored to available.",
+                bookingId, userId, slot.getId());
+    }
+
+    /**
+     * Get all bookings for a TAKER user.
+     *
+     * WHY @Transactional(readOnly = true)?
+     *
+     * 1. PERFORMANCE: Hibernate runs "dirty checking" on every loaded entity (comparing
+     *    all fields to detect changes). For read-only queries, this is wasted CPU.
+     *    readOnly=true tells Hibernate to skip dirty checking entirely.
+     *
+     * 2. DATABASE OPTIMIZATION: PostgreSQL can route readOnly transactions to read
+     *    replicas in a horizontally scaled deployment. Without this flag, all queries
+     *    hit the primary (write) database, creating an unnecessary bottleneck.
+     *
+     * 3. INTENT DECLARATION: It documents that this method should NEVER modify data.
+     *    If a developer accidentally adds a .save() call inside, the transaction
+     *    manager will throw an exception, catching the bug at development time.
+     */
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getBookingsForUser(Long userId) {
         List<Booking> bookings = bookingRepository.findByUser_UserIdOrderByStartTimeDesc(userId);
         return bookings.stream()
@@ -162,6 +260,7 @@ public class BookBikeService {
     /**
      * Get all bookings for a BIKER's bikes.
      */
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getBookingsForBiker(Long userId) {
         List<Bike> bikes = bikeRepository.findByBikerUserId(userId);
         if (bikes.isEmpty()) {
@@ -188,7 +287,25 @@ public class BookBikeService {
         long durationMinutes = Duration.between(booking.getStartTime(), booking.getEndTime()).toMinutes();
         long durationHours = (long) Math.ceil(durationMinutes / 60.0);
 
-        String status = booking.getEndTime().isAfter(LocalDateTime.now()) ? "UPCOMING" : "COMPLETED";
+        /*
+         * WHY use the persistent status field instead of computing from timestamps?
+         *
+         * Before: String status = endTime.isAfter(now) ? "UPCOMING" : "COMPLETED"
+         *   Problem: A CANCELLED booking with a future endTime would show as "UPCOMING"
+         *   instead of "CANCELLED" — because time-based logic can't represent user actions.
+         *
+         * After: We use the stored BookingStatus enum directly.
+         *   For backward compatibility with the frontend (which expects "UPCOMING"),
+         *   we map CONFIRMED to "UPCOMING" if the ride hasn't started yet.
+         */
+        String status;
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            status = "CANCELLED";
+        } else if (booking.getEndTime().isAfter(LocalDateTime.now())) {
+            status = "UPCOMING";
+        } else {
+            status = "COMPLETED";
+        }
 
         return BookingResponseDto.builder()
                 .id(booking.getId())

@@ -4,7 +4,6 @@ import com.example.MotoShare.dto.AddAvailabilitySlotDto;
 import com.example.MotoShare.dto.AddBikeRequestDto;
 import com.example.MotoShare.dto.BookingResponseDto;
 import com.example.MotoShare.entity.User;
-import com.example.MotoShare.service.AvailabilitySlotService;
 import com.example.MotoShare.service.BikeAddinginSlotService;
 import com.example.MotoShare.service.BikerAddingBikeDetailsService;
 import com.example.MotoShare.service.BookBikeService;
@@ -51,4 +50,12 @@ public class BikerController {
         return ResponseEntity.ok(bookings);
     }
 
+    // 4️⃣ Get all bikes listed by this biker
+    @GetMapping("/my-bikes")
+    public ResponseEntity<java.util.List<com.example.MotoShare.dto.BikerBikeResponseDto>> getMyBikes(
+            @AuthenticationPrincipal User user
+    ) {
+        java.util.List<com.example.MotoShare.dto.BikerBikeResponseDto> bikes = bikeService.getBikesByBiker(user.getUserId());
+        return ResponseEntity.ok(bikes);
+    }
 }

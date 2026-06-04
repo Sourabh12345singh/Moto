@@ -15,8 +15,12 @@ function MyBikes() {
 
   const fetchData = async () => {
     try {
-      // Fetch biker's bookings
-      const bookingsData = await bikerAPI.getMyBookings();
+      // Fetch biker's listed bikes and bookings in parallel
+      const [bikesData, bookingsData] = await Promise.all([
+        bikerAPI.getMyBikes(),
+        bikerAPI.getMyBookings()
+      ]);
+      setBikes(bikesData);
       setBookings(bookingsData);
     } catch (err) {
       console.error('Error fetching biker data:', err);
@@ -126,6 +130,37 @@ function MyBikes() {
                     Add Slot
                   </Link>
                 </div>
+
+                {/* Active Slots list */}
+                {bike.slots && bike.slots.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      Listed Slots
+                    </h4>
+                    <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                      {bike.slots.map((slot) => (
+                        <div
+                          key={slot.slotId}
+                          className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded border border-gray-100"
+                        >
+                          <div className="text-gray-600">
+                            <div>{formatDateTime(slot.startTime)}</div>
+                            <div className="text-[10px] text-gray-400">to {formatDateTime(slot.endTime)}</div>
+                          </div>
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full font-medium ${
+                              slot.isAvailable
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {slot.isAvailable ? 'Available' : 'Booked'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}

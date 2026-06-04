@@ -4,6 +4,7 @@ import com.example.MotoShare.dto.CreateUserRequestDto;
 import com.example.MotoShare.dto.LoginRequestDto;
 import com.example.MotoShare.service.AuthService;
 import com.example.MotoShare.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,13 +27,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody CreateUserRequestDto request) {
+    public ResponseEntity<String> register(@Valid @RequestBody CreateUserRequestDto request) {
         userService.createUser(request);
         return ResponseEntity.ok("User created successfully");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDto request) {
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDto request) {
         String token = authService.authenticate(
                 request.getEmail(),
                 request.getPassword()

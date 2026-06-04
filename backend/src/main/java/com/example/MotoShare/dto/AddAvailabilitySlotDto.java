@@ -8,10 +8,9 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class AddAvailabilitySlotDto {
-    private LocalDateTime StartTime;
-    private LocalDateTime EndTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private Long pricePerHour;
     private String city;
     private String pickupLocation;
 }
-

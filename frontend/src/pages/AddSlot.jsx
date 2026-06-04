@@ -52,6 +52,12 @@ function AddSlot() {
       return;
     }
 
+    const durationHours = (end - start) / (1000 * 60 * 60);
+    if (durationHours > 24) {
+      setError('Availability slot duration cannot exceed 24 hours');
+      return;
+    }
+
     setLoading(true);
 
     try {

@@ -41,6 +41,28 @@ VALUES (
     'APPROVED'
 );
 
+-- User 4: ADMIN (Verification account)
+INSERT INTO users (name, phone_no, email, password, role, kyc_status)
+VALUES (
+    'Admin User',
+    9999900002,
+    'admin@motoshare.com',
+    '$2a$10$Vwu7ZIjg5.CtonE5Pe5KgumkimBWXKVkfZZhN8UtrSavCJ3q83NQC',
+    'ADMIN',
+    'APPROVED'
+);
+
+-- User 5: HYBRID BIKER/TAKER (Rents & Sells)
+INSERT INTO users (name, phone_no, email, password, role, kyc_status)
+VALUES (
+    'Demo Hybrid User',
+    9876543220,
+    'hybrid@motoshare.com',
+    '$2a$10$Vwu7ZIjg5.CtonE5Pe5KgumkimBWXKVkfZZhN8UtrSavCJ3q83NQC',
+    'BIKER',
+    'APPROVED'
+);
+
 -- ============================================================
 -- BIKER & TAKER ENTITIES (required for pre-approved KYC users)
 -- ============================================================
@@ -52,6 +74,14 @@ VALUES (2, 4.5, 12);
 -- Taker entity for Priya (user_id = 3)
 INSERT INTO taker (user_id, rating, total_ratings)
 VALUES (3, 4.8, 5);
+
+-- Biker & Taker entities for hybrid user
+INSERT INTO biker (user_id, rating, total_ratings)
+SELECT user_id, 5.0, 1 FROM users WHERE email = 'hybrid@motoshare.com';
+
+INSERT INTO taker (user_id, rating, total_ratings)
+SELECT user_id, 5.0, 1 FROM users WHERE email = 'hybrid@motoshare.com';
+
 
 -- ============================================================
 -- DELHI BIKES (3 bikes) - biker_id = 2

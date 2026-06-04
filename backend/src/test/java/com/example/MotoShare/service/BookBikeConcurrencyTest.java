@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,6 +22,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * Enterprise-grade multi-threaded integration test verifying the Pessimistic Lock.
  * Simulates a "Flash Sale" scenario where 50 concurrent takers attempt to book
  * the exact same bike slot at the exact same millisecond.
+ *
+ * Also includes a concurrent cancellation stress test to verify our new
+ * cancellation locking works correctly under pressure.
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -178,7 +180,7 @@ public class BookBikeConcurrencyTest {
         System.out.println("========== CONCURRENCY TEST RESULT ==========");
         System.out.println("Successful bookings: " + successCount.get());
         System.out.println("Failed bookings: " + failureCount.get());
-        System.out.println("=============================================");
+        System.out.println("==============================================");
 
         // Exactly 1 thread must succeed
         assertEquals(1, successCount.get(), "Concurrency Failure: More than 1 taker booked the slot!");
@@ -193,5 +195,87 @@ public class BookBikeConcurrencyTest {
         // Assert that the original slot is now marked as unavailable
         AvailabilitySlot updatedSlot = availabilitySlotRepository.findById(testSlotId).orElseThrow();
         assertFalse(updatedSlot.getIsAvailable(), "Availability slot was not updated to unavailable!");
+
+        // NEW: Verify the booking has CONFIRMED status (not computed from time)
+        Booking savedBooking = bookingRepository.findAll().get(0);
+        assertEquals(BookingStatus.CONFIRMED, savedBooking.getStatus(),
+                "Booking should have CONFIRMED status!");
+    }
+
+    /**
+     * NEW TEST: Concurrent Cancellation Stress Test
+     *
+     * WHY test concurrent cancellation?
+     * Scenario: User rapidly double-clicks "Cancel" or has a buggy frontend.
+     * Without proper locking, two threads could both read status=CONFIRMED,
+     * both cancel, and both restore the slot — creating a ghost available slot.
+     *
+     * This test verifies that only ONE cancellation succeeds and the slot
+     * is restored exactly once.
+     */
+    @Test
+    public void testConcurrentCancellationsOnlyOneSucceeds() throws InterruptedException {
+        // First, create a valid booking (single-threaded, deterministic)
+        Long firstTakerId = takerUserIds.get(0);
+        bookBikeService.bookBike(testSlotId, startTime, endTime, firstTakerId);
+
+        // Verify booking was created
+        List<Booking> bookings = bookingRepository.findAll();
+        assertEquals(1, bookings.size());
+        Long bookingId = bookings.get(0).getId();
+
+        // Now fire 10 concurrent cancellation attempts on the same booking
+        int cancelThreads = 10;
+        ExecutorService executorService = Executors.newFixedThreadPool(cancelThreads);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch endLatch = new CountDownLatch(cancelThreads);
+
+        AtomicInteger cancelSuccess = new AtomicInteger(0);
+        AtomicInteger cancelFailure = new AtomicInteger(0);
+
+        for (int i = 0; i < cancelThreads; i++) {
+            executorService.submit(() -> {
+                try {
+                    startLatch.await();
+                    bookBikeService.cancelBooking(bookingId, firstTakerId);
+                    cancelSuccess.incrementAndGet();
+                } catch (Exception e) {
+                    cancelFailure.incrementAndGet();
+                } finally {
+                    endLatch.countDown();
+                }
+            });
+        }
+
+        // Release all threads simultaneously
+        startLatch.countDown();
+        boolean finished = endLatch.await(15, TimeUnit.SECONDS);
+        assertTrue(finished, "Not all cancellation threads finished!");
+        executorService.shutdown();
+
+        System.out.println("========== CANCELLATION TEST RESULT ==========");
+        System.out.println("Successful cancellations: " + cancelSuccess.get());
+        System.out.println("Failed cancellations: " + cancelFailure.get());
+        System.out.println("===============================================");
+
+        // Exactly 1 cancellation must succeed
+        assertEquals(1, cancelSuccess.get(),
+                "Concurrency Failure: More than 1 cancellation succeeded!");
+
+        // 9 must fail (booking already cancelled)
+        assertEquals(9, cancelFailure.get(),
+                "Concurrency Failure: Failed cancellation count mismatch!");
+
+        // The booking must be CANCELLED
+        Booking cancelledBooking = bookingRepository.findById(bookingId).orElseThrow();
+        assertEquals(BookingStatus.CANCELLED, cancelledBooking.getStatus(),
+                "Booking status should be CANCELLED!");
+        assertNotNull(cancelledBooking.getCancelledAt(),
+                "Cancelled booking must have a cancellation timestamp!");
+
+        // The slot must be restored to available
+        AvailabilitySlot restoredSlot = availabilitySlotRepository.findById(testSlotId).orElseThrow();
+        assertTrue(restoredSlot.getIsAvailable(),
+                "Slot should be restored to available after cancellation!");
     }
 }
