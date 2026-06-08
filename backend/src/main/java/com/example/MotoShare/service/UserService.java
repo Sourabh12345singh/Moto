@@ -4,6 +4,8 @@ import com.example.MotoShare.dto.CreateUserRequestDto;
 import com.example.MotoShare.entity.Kyc;
 import com.example.MotoShare.entity.KycStatus;
 import com.example.MotoShare.entity.User;
+import com.example.MotoShare.error.BusinessRuleException;
+import com.example.MotoShare.error.ResourceNotFoundException;
 import com.example.MotoShare.repository.KycRepository;
 import com.example.MotoShare.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -22,11 +24,11 @@ public class UserService {
     public User createUser(CreateUserRequestDto dto) {
 
         if (userRepository.existsByPhoneNo(dto.getPhoneNo())) {
-            throw new RuntimeException("Phone number already exists");
+            throw new BusinessRuleException("Phone number already exists");
         }
 
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("User already exists");
+            throw new BusinessRuleException("User already exists");
         }
 
         User user = new User();
@@ -42,14 +44,14 @@ public class UserService {
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", email));
     }
 
     @Transactional
     public void updateKycStatus(Long userId, KycStatus status) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         if (status == KycStatus.REJECTED) {
             kycRepository.deleteByUserId(userId);
@@ -70,5 +72,3 @@ public class UserService {
         }
     }
 }
-
-

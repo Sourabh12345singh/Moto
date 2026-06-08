@@ -4,6 +4,7 @@ import com.example.MotoShare.dto.AddAvailabilitySlotDto;
 import com.example.MotoShare.entity.AvailabilitySlot;
 import com.example.MotoShare.entity.Bike;
 import com.example.MotoShare.error.BusinessRuleException;
+import com.example.MotoShare.error.ResourceNotFoundException;
 import com.example.MotoShare.repository.AvailabilitySlotRepository;
 import com.example.MotoShare.repository.BikeRepository;
 import jakarta.transaction.Transactional;
@@ -24,7 +25,7 @@ public class BikeAddinginSlotService {
 
         Bike bike = bikeRepository.findById(bikeId)
                 .orElseThrow(() ->
-                        new RuntimeException("Bike not found with id: " + bikeId));
+                        new ResourceNotFoundException("Bike", bikeId));
 
         // Enforce maximum slot duration limit: 24 hours
         /*
@@ -54,3 +55,4 @@ public class BikeAddinginSlotService {
         availabilitySlotRepository.save(slot);
     }
 }
+
