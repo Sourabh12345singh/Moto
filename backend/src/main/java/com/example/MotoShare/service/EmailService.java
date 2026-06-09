@@ -110,6 +110,27 @@ public class EmailService {
     }
 
     /**
+     * Public async method to send verification OTP code to user.
+     */
+    @Async
+    public void sendOtpEmail(String recipientEmail, String otpCode) {
+        String subject = "MotoShare - Verify Your Email Address";
+        String body = "<div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #eee;border-radius:10px'>"
+                + "<h2 style='color:#4F46E5;text-align:center'>Email Verification</h2>"
+                + "<p>Hi,</p>"
+                + "<p>Thank you for choosing MotoShare! To verify your email address, please use the following one-time password (OTP):</p>"
+                + "<div style='text-align:center;margin:24px 0'>"
+                + "<span style='display:inline-block;background-color:#F3F4F6;color:#1F2937;font-size:32px;font-weight:bold;letter-spacing:6px;padding:12px 24px;border-radius:8px;border:1px solid #E5E7EB'>" + otpCode + "</span>"
+                + "</div>"
+                + "<p style='color:#666;font-size:13px;text-align:center'>This OTP is valid for <strong>5 minutes</strong>. If you did not request this code, you can safely ignore this email.</p>"
+                + "<hr style='border:0;border-top:1px solid #eee;margin:24px 0'>"
+                + "<p style='margin-top:16px;text-align:center;color:#9CA3AF;font-size:12px'>Team MotoShare<br>Drive the Freedom</p>"
+                + "</div>";
+
+        sendWithRetryAndFallback(recipientEmail, subject, body);
+    }
+
+    /**
      * Resilient internal helper executing email sends with Exponential Backoff Retry,
      * degrading gracefully by writing to the database DLQ if completely offline.
      */

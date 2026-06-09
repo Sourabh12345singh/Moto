@@ -114,6 +114,21 @@ export const authAPI = {
     const response = await api.post("/auth/login", { email, password });
     return response.data; // Returns JWT token as plain text
   },
+
+  sendOtp: async (email) => {
+    const response = await api.post("/auth/send-otp", { email });
+    return response.data; // { message, userExists }
+  },
+
+  verifyOtp: async (email, otpCode) => {
+    const response = await api.post("/auth/verify-otp", { email, otpCode });
+    return response.data; // { message, userExists }
+  },
+
+  resetPassword: async (email, password) => {
+    const response = await api.post("/auth/reset-password", { email, password });
+    return response.data; // Success message
+  },
 };
 
 // ============== USER/TAKER APIs ==============

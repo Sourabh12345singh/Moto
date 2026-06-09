@@ -20,26 +20,55 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final KycRepository kycRepository;
+    private final OtpService otpService;
 
     public User createUser(CreateUserRequestDto dto) {
+        String email = dto.getEmail().trim().toLowerCase();
+
+        if (!otpService.isOtpVerified(email)) {
+            throw new BusinessRuleException("Email has not been verified. Please verify email first.");
+        }
 
         if (userRepository.existsByPhoneNo(dto.getPhoneNo())) {
             throw new BusinessRuleException("Phone number already exists");
         }
 
-        if (userRepository.existsByEmail(dto.getEmail())) {
+        if (userRepository.existsByEmail(email)) {
             throw new BusinessRuleException("User already exists");
         }
 
         User user = new User();
         user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(dto.getPassword())); // Encrypt the password
         user.setPhoneNo(dto.getPhoneNo());
         user.setRole(dto.getRole());
         user.setKycStatus(KycStatus.NOT_SUBMITTED);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        otpService.consumeOtp(email); // Consume OTP after successful registration
+        return savedUser;
+    }
+
+    @Transactional
+    public void resetPassword(String email, String newPassword) {
+        if (email == null || newPassword == null || newPassword.trim().length() < 6) {
+            throw new BusinessRuleException("Email and valid password (min 6 characters) are required");
+        }
+
+        final String finalEmail = email.trim().toLowerCase();
+
+        if (!otpService.isOtpVerified(finalEmail)) {
+            throw new BusinessRuleException("Email has not been verified. Please verify email first.");
+        }
+
+        User user = userRepository.findByEmail(finalEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User", finalEmail));
+
+        user.setPassword(passwordEncoder.encode(newPassword.trim()));
+        userRepository.save(user);
+
+        otpService.consumeOtp(finalEmail); // Consume OTP after successful password reset
     }
 
     public User getUserByEmail(String email) {

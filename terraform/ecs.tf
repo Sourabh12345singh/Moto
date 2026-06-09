@@ -57,7 +57,7 @@ resource "aws_ecs_task_definition" "backend" {
         }
       ]
       environment = [
-        { name = "DB_URL", value = "jdbc:postgresql://${aws_db_instance.postgres.endpoint}/${var.db_name}" },
+        { name = "DB_URL", value = "jdbc:postgresql://${aws_db_instance.postgres.endpoint}/${var.db_name}?sslmode=require" },
         { name = "DB_USERNAME", value = var.db_username },
         { name = "DB_PASSWORD", value = var.db_password },
         { name = "JWT_SECRET", value = var.jwt_secret },

@@ -39,10 +39,10 @@ resource "aws_lb_target_group" "backend" {
   target_type = "ip"
 
   health_check {
-    path                = "/api/auth/login"
+    path = "/api/auth/login"
     # Matches 200-499 because GET /api/auth/login returns 405 Method Not Allowed,
     # which proves the backend container is up and running.
-    matcher             = "200-499" 
+    matcher             = "200-499"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 3
