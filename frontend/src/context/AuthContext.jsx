@@ -53,6 +53,30 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
+  const googleLogin = async (code, role = null) => {
+    const jwtToken = await authAPI.googleLogin(code, null, role);
+
+    const payload = JSON.parse(atob(jwtToken.split(".")[1]));
+    console.log("JWT Payload (Google):", payload);
+
+    const userData = {
+      userId: payload.userId,
+      email: payload.sub,
+      role: payload.role,
+      name: payload.name || payload.sub.split("@")[0],
+      kycStatus: payload.kycStatus || "NOT_SUBMITTED",
+    };
+
+    console.log("User data (Google):", userData);
+
+    localStorage.setItem("token", jwtToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+    setToken(jwtToken);
+    setUser(userData);
+
+    return userData;
+  };
+
   // Refresh user status from the database without re-login
   // Fetches fresh kycStatus, role, name from GET /api/users/me/status
   const refreshStatus = async () => {
@@ -103,6 +127,7 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         register,
         login,
+        googleLogin,
         logout,
         updateUser,
         refreshStatus,

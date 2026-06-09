@@ -63,7 +63,9 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "JWT_SECRET", value = var.jwt_secret },
         { name = "MAIL_USERNAME", value = var.mail_username },
         { name = "MAIL_PASSWORD", value = var.mail_password },
-        { name = "FRONTEND_URLS", value = "http://${aws_lb.alb.dns_name}" }
+        { name = "FRONTEND_URLS", value = "http://${aws_lb.alb.dns_name}" },
+        { name = "GOOGLE_CLIENT_ID", value = var.google_client_id },
+        { name = "GOOGLE_CLIENT_SECRET", value = var.google_client_secret }
       ]
       logConfiguration = {
         logDriver = "awslogs"

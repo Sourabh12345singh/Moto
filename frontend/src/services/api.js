@@ -115,6 +115,11 @@ export const authAPI = {
     return response.data; // Returns JWT token as plain text
   },
 
+  googleLogin: async (code, redirectUri = null, role = null) => {
+    const response = await api.post("/auth/google", { code, redirectUri, role });
+    return response.data; // Returns JWT token as plain text
+  },
+
   sendOtp: async (email) => {
     const response = await api.post("/auth/send-otp", { email });
     return response.data; // { message, userExists }
@@ -129,6 +134,7 @@ export const authAPI = {
     const response = await api.post("/auth/reset-password", { email, password });
     return response.data; // Success message
   },
+
 };
 
 // ============== USER/TAKER APIs ==============

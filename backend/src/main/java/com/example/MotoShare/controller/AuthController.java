@@ -1,6 +1,7 @@
 package com.example.MotoShare.controller;
 
 import com.example.MotoShare.dto.CreateUserRequestDto;
+import com.example.MotoShare.dto.GoogleLoginRequestDto;
 import com.example.MotoShare.dto.LoginRequestDto;
 import com.example.MotoShare.dto.OtpResponseDto;
 import com.example.MotoShare.service.AuthService;
@@ -68,4 +69,11 @@ public class AuthController {
         );
         return ResponseEntity.ok(token);
     }
+
+    @PostMapping("/google")
+    public ResponseEntity<String> googleLogin(@Valid @RequestBody GoogleLoginRequestDto request) {
+        String token = authService.loginWithGoogle(request);
+        return ResponseEntity.ok(token);
+    }
 }
+

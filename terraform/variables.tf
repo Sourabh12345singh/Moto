@@ -68,3 +68,17 @@ variable "frontend_image" {
   type        = string
   default     = "sourabhsinghrathore/motoshare-frontend:latest"
 }
+
+variable "google_client_id" {
+  description = "Google Client ID for OAuth 2.0"
+  type        = string
+  default     = ""
+}
+
+variable "google_client_secret" {
+  description = "Google Client Secret for OAuth 2.0"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
