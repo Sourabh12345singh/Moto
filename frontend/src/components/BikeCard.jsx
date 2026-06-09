@@ -8,76 +8,79 @@ function BikeCard({ bike, onBook, hideBookButton = false, kycApproved = true }) 
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl overflow-hidden hover:border-cyan-500/40 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(6,180,212,0.15)] transition-all duration-300 shadow-xl group flex flex-col h-full">
       {/* Bike Image */}
-      {bike.imageUrl ? (
-        <img
-          src={bike.imageUrl}
-          alt={`${bike.company} ${bike.model}`}
-          className="h-48 w-full object-cover"
-        />
-      ) : (
-        <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-          <svg className="w-20 h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-          </svg>
+      <div className="relative h-48 w-full overflow-hidden bg-slate-950">
+        {bike.imageUrl ? (
+          <img
+            src={bike.imageUrl}
+            alt={`${bike.company} ${bike.model}`}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-br from-slate-900 to-slate-950 flex items-center justify-center">
+            <svg className="w-16 h-16 text-slate-800 stroke-[1.5] group-hover:text-cyan-500/50 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </div>
+        )}
+        <div className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-sm border border-slate-800 px-2.5 py-1 rounded-md text-[10px] font-mono text-cyan-400 uppercase tracking-widest">
+          Available
         </div>
-      )}
+      </div>
 
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-grow">
         {/* Bike Info */}
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-bold text-white font-mono uppercase tracking-wide">
             {bike.company} {bike.model}
           </h3>
-          <div className="flex items-center text-sm text-gray-500 mt-1">
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center text-xs text-slate-400 mt-1.5 font-mono">
+            <svg className="w-4 h-4 mr-1.5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            {bike.pickupLocation}, {bike.city}
+            {bike.pickupLocation}, {bike.city.toUpperCase()}
           </div>
         </div>
 
         {/* Slot Info */}
-        <div className="bg-gray-50 rounded-lg p-3 mb-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Available Slot</div>
-          <div className="space-y-1 text-sm">
-            <div className="flex items-center text-gray-700">
-              <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {formatDateTime(bike.startHour)}
+        <div className="bg-slate-950/60 border border-slate-900 rounded-xl p-3.5 mb-6 flex-grow">
+          <div className="text-[10px] text-slate-500 font-mono uppercase tracking-wider mb-2.5">Available timeslot</div>
+          <div className="space-y-2 text-xs font-mono">
+            <div className="flex items-center text-slate-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2.5 animate-pulse"></span>
+              <span className="text-[10px] text-slate-500 uppercase w-8">Start:</span>
+              <span className="text-slate-300">{formatDateTime(bike.startHour)}</span>
             </div>
-            <div className="flex items-center text-gray-700">
-              <svg className="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {formatDateTime(bike.endHour)}
+            <div className="flex items-center text-slate-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-2.5 animate-pulse"></span>
+              <span className="text-[10px] text-slate-500 uppercase w-8">End:</span>
+              <span className="text-slate-300">{formatDateTime(bike.endHour)}</span>
             </div>
           </div>
         </div>
 
         {/* Price & Book Button */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-900">
           <div>
-            <span className="text-2xl font-bold text-primary-600">Rs {bike.pricePerHour}</span>
-            <span className="text-gray-500 text-sm">/hour</span>
+            <span className="text-2xl font-bold font-mono text-cyan-400">Rs {bike.pricePerHour}</span>
+            <span className="text-slate-500 text-[10px] font-mono uppercase">/hr</span>
           </div>
           {!hideBookButton && (
             kycApproved ? (
               <button
                 onClick={() => onBook(bike)}
-                className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-sm transition-all duration-300 shadow-[0_0_15px_rgba(6,180,212,0.25)] hover:shadow-[0_0_20px_rgba(6,180,212,0.45)] transform active:scale-95 font-mono uppercase tracking-wider"
               >
-                Book Now
+                Acquire
               </button>
             ) : (
               <button
                 onClick={() => onBook(bike)}
-                className="bg-gray-400 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-500 transition-colors text-sm"
+                className="bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 px-3.5 py-2.5 rounded-xl text-xs transition-colors font-mono uppercase tracking-wider border border-slate-700"
               >
-                Complete KYC to Book
+                Verify KYC
               </button>
             )
           )}

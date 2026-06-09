@@ -30,8 +30,10 @@ public class AvailabilitySlotService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime maxDate = now.plusDays(7);
 
+        String normalizedCity = (city != null) ? city.trim().toLowerCase() : "";
+
         List<AvailabilitySlot> list = availabilitySlotRepository.findAvailableSlotsForNext7Days(
-                city, now, maxDate
+                normalizedCity, now, maxDate
         );
 
         return availabilitySlotMapper.toDtoList(list);

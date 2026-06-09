@@ -113,7 +113,7 @@ public class BookBikeConcurrencyTest {
             slot.setEndHour(endTime);
             slot.setPricePerHour(150L);
             slot.setIsAvailable(true);
-            slot.setCity("Delhi");
+            slot.setCity("delhi");
             slot.setPickupLocation("Connaught Place Gate 2");
             availabilitySlotRepository.save(slot);
             testSlotId = slot.getId();

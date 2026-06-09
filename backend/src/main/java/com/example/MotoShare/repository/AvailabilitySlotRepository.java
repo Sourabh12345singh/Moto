@@ -19,7 +19,7 @@ public interface AvailabilitySlotRepository extends JpaRepository<AvailabilitySl
     FROM AvailabilitySlot a
     JOIN FETCH a.bike b
     JOIN FETCH b.biker
-    WHERE LOWER(a.city) = LOWER(:city)
+    WHERE a.city = :city
       AND a.isAvailable = true
       AND a.startHour >= :now
       AND a.startHour <= :maxDate

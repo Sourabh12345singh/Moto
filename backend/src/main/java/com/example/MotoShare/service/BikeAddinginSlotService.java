@@ -49,7 +49,7 @@ public class BikeAddinginSlotService {
         slot.setEndHour(dto.getEndTime());
         slot.setPricePerHour(bike.getRatePerHour());
         slot.setIsAvailable(true);
-        slot.setCity(dto.getCity());
+        slot.setCity(dto.getCity() != null ? dto.getCity().trim().toLowerCase() : "");
         slot.setPickupLocation(dto.getPickupLocation());
 
         availabilitySlotRepository.save(slot);
