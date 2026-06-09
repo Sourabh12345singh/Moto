@@ -111,11 +111,12 @@ resource "aws_ecs_task_definition" "frontend" {
 
 # 6. Backend Service (Runs the Spring Boot container task)
 resource "aws_ecs_service" "backend" {
-  name            = "motoshare-backend"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.backend.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  name                              = "motoshare-backend"
+  cluster                           = aws_ecs_cluster.main.id
+  task_definition                   = aws_ecs_task_definition.backend.arn
+  desired_count                     = 1
+  launch_type                       = "FARGATE"
+  health_check_grace_period_seconds = 180 # Prevent ECS from killing container while Spring Boot boots up
 
   network_configuration {
     subnets          = [aws_subnet.public_a.id, aws_subnet.public_b.id]
@@ -134,11 +135,12 @@ resource "aws_ecs_service" "backend" {
 
 # 7. Frontend Service (Runs the React/Nginx container task)
 resource "aws_ecs_service" "frontend" {
-  name            = "motoshare-frontend"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.frontend.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  name                              = "motoshare-frontend"
+  cluster                           = aws_ecs_cluster.main.id
+  task_definition                   = aws_ecs_task_definition.frontend.arn
+  desired_count                     = 1
+  launch_type                       = "FARGATE"
+  health_check_grace_period_seconds = 180 # Grace period for frontend
 
   network_configuration {
     subnets          = [aws_subnet.public_a.id, aws_subnet.public_b.id]
@@ -154,3 +156,4 @@ resource "aws_ecs_service" "frontend" {
 
   depends_on = [aws_lb_listener.http]
 }
+
