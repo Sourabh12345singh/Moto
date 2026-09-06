@@ -17,22 +17,22 @@ const KycSubmit = React.lazy(() => import('./pages/KycSubmit'))
 const AdminKyc = React.lazy(() => import('./pages/AdminKyc'))
 const MyBookings = React.lazy(() => import('./pages/MyBookings'))
 
-// Premium Techy Loading Spinner
+// Premium Startup-Style Loading Spinner
 const PageLoader = () => (
-  <div className="min-h-[70vh] flex flex-col items-center justify-center bg-slate-950">
+  <div className="min-h-[70vh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-200">
     <div className="relative">
-      <div className="w-16 h-16 border-4 border-cyan-500/10 border-t-cyan-500 rounded-full animate-spin"></div>
-      <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-b-indigo-500 rounded-full animate-ping opacity-30"></div>
+      <div className="w-16 h-16 border-4 border-rose-500/10 border-t-rose-500 rounded-full animate-spin"></div>
+      <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-b-amber-500 rounded-full animate-ping opacity-30"></div>
     </div>
-    <span className="mt-4 text-cyan-400 font-mono text-xs tracking-widest uppercase animate-pulse">
-      Syncing Grid Interface...
+    <span className="mt-4 text-rose-500 dark:text-rose-400 font-mono text-xs tracking-widest uppercase animate-pulse">
+      Loading motoShare...
     </span>
   </div>
 );
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-neutral-800 dark:text-slate-100 font-sans selection:bg-rose-500 selection:text-white transition-colors duration-200">
       <Navbar />
       <main className="flex-grow">
         <Suspense fallback={<PageLoader />}>

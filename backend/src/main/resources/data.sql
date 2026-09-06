@@ -265,3 +265,6 @@ FROM bikes b WHERE b.bike_number = 'RJ14GG7007' AND NOT EXISTS (SELECT 1 FROM av
 INSERT INTO availability_slots (id, bike_id, start_hour, end_hour, price_per_hour, is_available, city, pickup_location)
 SELECT gen_random_uuid(), b.bike_id, CURRENT_TIMESTAMP + INTERVAL '3 days' + INTERVAL '6 hours', CURRENT_TIMESTAMP + INTERVAL '3 days' + INTERVAL '20 hours', 220, true, 'Jaipur', 'C-Scheme, Near Raj Mandir Cinema'
 FROM bikes b WHERE b.bike_number = 'RJ14GG7007' AND NOT EXISTS (SELECT 1 FROM availability_slots a WHERE a.bike_id = b.bike_id AND a.city = 'Jaipur' AND a.start_hour > CURRENT_TIMESTAMP + INTERVAL '2 days');
+
+-- Normalize all slot cities to lowercase
+UPDATE availability_slots SET city = LOWER(city);

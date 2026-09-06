@@ -4,6 +4,9 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: #ffffff;
+  color: #222222;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Custom scrollbar */

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 
 function Register() {
-  const [step, setStep] = useState(1); // Step 1: Email, Step 2: OTP, Step 3: Registration or Password Reset
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [userExists, setUserExists] = useState(false);
@@ -15,7 +15,7 @@ function Register() {
     phoneNo: '',
     password: '',
     confirmPassword: '',
-    role: 'TAKER', // Default role
+    role: 'TAKER',
   });
 
   const [error, setError] = useState('');
@@ -31,7 +31,7 @@ function Register() {
     setLoading(true);
     try {
       await googleLogin(tokenResponse.code, formData.role);
-      setSuccess('✅ Registration successful! Redirecting...');
+      setSuccess('Registration successful! Redirecting...');
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
@@ -63,22 +63,19 @@ function Register() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // OTP box change handler with auto-advance
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
     if (isNaN(value)) return;
 
     const newOtp = [...otp];
-    newOtp[index] = value.substring(value.length - 1); // Only take last character
+    newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
 
-    // Focus next box
     if (value && index < 5) {
       document.getElementById(`otp-${index + 1}`).focus();
     }
   };
 
-  // OTP keydown handler to support backspace back-navigation
   const handleOtpKeyDown = (e, index) => {
     if (e.key === 'Backspace') {
       if (!otp[index] && index > 0) {
@@ -87,7 +84,6 @@ function Register() {
     }
   };
 
-  // Step 1: Request OTP Email
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
     setError('');
@@ -111,7 +107,6 @@ function Register() {
     }
   };
 
-  // Step 2: Verify OTP
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setError('');
@@ -127,7 +122,7 @@ function Register() {
     try {
       const res = await authAPI.verifyOtp(email, otpCode);
       setUserExists(res.userExists);
-      setSuccess('✅ Email Verified Successfully!');
+      setSuccess('Email Verified Successfully!');
       setTimeout(() => {
         setStep(3);
         setSuccess('');
@@ -139,13 +134,11 @@ function Register() {
     }
   };
 
-  // Step 3: Handle Final Action (Register or Reset Password)
   const handleSubmitFinal = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -160,15 +153,12 @@ function Register() {
 
     try {
       if (userExists) {
-        // Reset password for existing user
         await authAPI.resetPassword(email, formData.password);
         setSuccess('Password updated successfully! Redirecting to login...');
         setTimeout(() => {
           navigate('/login');
         }, 2000);
       } else {
-        // Register new user
-        // Validate phone number - must be exactly 10 digits
         const phoneNoStr = formData.phoneNo.trim();
         if (!/^\d{10}$/.test(phoneNoStr)) {
           setError('Phone number must be exactly 10 digits');
@@ -205,55 +195,48 @@ function Register() {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-950 relative overflow-hidden font-sans">
-      
-      {/* Cyber Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none opacity-40"></div>
-      
-      {/* Glow */}
-      <div className="absolute w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none top-1/4 right-1/4"></div>
-
-      <div className="max-w-md w-full relative z-10">
+    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-neutral-50 dark:bg-slate-950 font-sans transition-colors duration-200">
+      <div className="max-w-md w-full">
         
-        {/* Techy Header */}
+        {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-extrabold tracking-wider text-white uppercase font-mono">
-            {step === 3 && userExists ? 'Reset console' : 'Register Console'}
+          <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+            {step === 3 && userExists ? 'Reset Password' : 'Create Account'}
           </h2>
-          <p className="mt-2 text-xs text-slate-500 font-mono tracking-widest uppercase">
-            {step === 1 && 'STEP 01: INITIALIZE IDENTITY'}
-            {step === 2 && 'STEP 02: VERIFICATION PROTOCOL'}
-            {step === 3 && (userExists ? 'OVERWRITE SECURITY PASSPHRASE' : 'STEP 03: CONFIGURE CREDENTIALS')}
+          <p className="mt-2 text-sm text-neutral-500 dark:text-slate-400 font-medium">
+            {step === 1 && 'Step 1: Verify your email address'}
+            {step === 2 && 'Step 2: Enter verification code'}
+            {step === 3 && (userExists ? 'Choose a new password' : 'Step 3: Setup your profile details')}
           </p>
         </div>
 
-        {/* Diagnostic Status Bar */}
-        <div className="flex items-center justify-center space-x-3 mb-6 font-mono text-xs">
-          <div className={`w-8 h-8 rounded-lg border flex items-center justify-center font-bold transition-all duration-300 ${
-            step >= 1 ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,180,212,0.2)]' : 'border-slate-800 bg-slate-950 text-slate-600'
-          }`}>01</div>
-          <div className={`w-8 h-0.5 transition-colors ${step >= 2 ? 'bg-cyan-500' : 'bg-slate-800'}`}></div>
-          <div className={`w-8 h-8 rounded-lg border flex items-center justify-center font-bold transition-all duration-300 ${
-            step >= 2 ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,180,212,0.2)]' : 'border-slate-800 bg-slate-950 text-slate-600'
-          }`}>02</div>
-          <div className={`w-8 h-0.5 transition-colors ${step >= 3 ? 'bg-cyan-500' : 'bg-slate-800'}`}></div>
-          <div className={`w-8 h-8 rounded-lg border flex items-center justify-center font-bold transition-all duration-300 ${
-            step >= 3 ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,180,212,0.2)]' : 'border-slate-800 bg-slate-950 text-slate-600'
-          }`}>03</div>
+        {/* Wizard Progress Dots */}
+        <div className="flex items-center justify-center space-x-3 mb-8 text-xs font-semibold">
+          <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+            step >= 1 ? 'border-rose-500 bg-rose-500 text-white' : 'border-neutral-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-neutral-400 dark:text-slate-500'
+          }`}>1</div>
+          <div className={`w-12 h-0.5 ${step >= 2 ? 'bg-rose-500' : 'bg-neutral-200 dark:bg-slate-800'}`}></div>
+          <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+            step >= 2 ? 'border-rose-500 bg-rose-500 text-white' : 'border-neutral-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-neutral-400 dark:text-slate-500'
+          }`}>2</div>
+          <div className={`w-12 h-0.5 ${step >= 3 ? 'bg-rose-500' : 'bg-neutral-200 dark:bg-slate-800'}`}></div>
+          <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+            step >= 3 ? 'border-rose-500 bg-rose-500 text-white' : 'border-neutral-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-neutral-400 dark:text-slate-500'
+          }`}>3</div>
         </div>
 
-        {/* Glassmorphic Container */}
-        <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 py-8 px-6 sm:px-10 shadow-2xl rounded-2xl">
+        {/* Card */}
+        <div className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 py-8 px-6 sm:px-10 shadow-lg dark:shadow-slate-955/50 rounded-2xl">
           {error && (
-            <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-lg text-sm font-mono flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+            <div className="mb-4 p-3.5 bg-rose-50 dark:bg-rose-955/20 border border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-semibold flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
               {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg text-sm font-mono flex items-center gap-2 justify-center">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="mb-4 p-3.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-450 rounded-xl text-sm font-semibold flex items-center gap-2 justify-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               {success}
             </div>
           )}
@@ -263,8 +246,8 @@ function Register() {
             <div className="space-y-5">
               <form onSubmit={handleSendOtp} className="space-y-5">
                 <div>
-                  <label htmlFor="email" className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-2">
-                    Identity Email Address
+                  <label htmlFor="email" className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    Email Address
                   </label>
                   <input
                     id="email"
@@ -273,41 +256,42 @@ function Register() {
                     required
                     value={email}
                     onChange={handleEmailChange}
-                    className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 hover:border-slate-700 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-300 font-mono text-sm focus:shadow-[0_0_15px_rgba(6,180,212,0.15)] placeholder-slate-600"
-                    placeholder="you@console.com"
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 focus:border-neutral-955 dark:focus:border-white rounded-xl text-neutral-800 dark:text-white outline-none transition-all text-sm font-semibold placeholder-neutral-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-neutral-955 dark:focus:ring-white"
+                    placeholder="name@example.com"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-slate-900 hover:bg-slate-850 text-white font-mono uppercase text-sm tracking-wider border border-slate-850 hover:border-cyan-500/40 py-3 px-4 rounded-xl transition-all duration-350 shadow-sm"
+                  className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-sm active:scale-95 flex items-center justify-center"
                 >
-                  {loading ? 'Transmitting Code...' : 'Initialize Verification'}
+                  {loading ? 'Sending code...' : 'Continue'}
                 </button>
               </form>
 
+              {/* Divider */}
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-800"></div>
+                  <div className="w-full border-t border-neutral-200 dark:border-slate-800"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-slate-900/50 backdrop-blur-sm text-slate-500 font-mono tracking-wider uppercase">Or Secure Link</span>
+                  <span className="px-3 bg-white dark:bg-slate-900 text-neutral-400 dark:text-slate-500 font-bold uppercase tracking-wider">Or</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-3 text-center">
-                  Declare Grid Role for Google Sign-up
+                <label className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-3 text-center">
+                  Declare Role for Google Sign-up
                 </label>
                 <div className="flex gap-4 justify-center mb-4">
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, role: 'TAKER' }))}
-                    className={`flex-1 py-2 px-3 border rounded-xl text-xs font-mono transition-all duration-200 uppercase tracking-wider ${
+                    className={`flex-1 py-2 px-3 border rounded-xl text-xs font-bold transition-all uppercase tracking-wider ${
                       formData.role === 'TAKER'
-                        ? 'border-cyan-500/80 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,180,212,0.15)]'
-                        : 'border-slate-850 bg-slate-950/60 text-slate-400 hover:bg-slate-900'
+                        ? 'border-rose-500 bg-rose-55 dark:bg-rose-955/20 text-rose-500 dark:text-rose-400 shadow-sm'
+                        : 'border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-neutral-500 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-750'
                     }`}
                   >
                     Rent (Taker)
@@ -315,10 +299,10 @@ function Register() {
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, role: 'BIKER' }))}
-                    className={`flex-1 py-2 px-3 border rounded-xl text-xs font-mono transition-all duration-200 uppercase tracking-wider ${
+                    className={`flex-1 py-2 px-3 border rounded-xl text-xs font-bold transition-all uppercase tracking-wider ${
                       formData.role === 'BIKER'
-                        ? 'border-cyan-500/80 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,180,212,0.15)]'
-                        : 'border-slate-850 bg-slate-950/60 text-slate-400 hover:bg-slate-900'
+                        ? 'border-rose-500 bg-rose-55 dark:bg-rose-955/20 text-rose-500 dark:text-rose-400 shadow-sm'
+                        : 'border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-neutral-500 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-750'
                     }`}
                   >
                     List (Biker)
@@ -329,7 +313,7 @@ function Register() {
                   type="button"
                   onClick={() => triggerGoogleLogin()}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 bg-slate-950/60 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white py-3 px-4 rounded-xl font-mono text-sm tracking-wide transition-all duration-200 transform active:scale-95 hover:shadow-[0_0_15px_rgba(6,180,212,0.1)]"
+                  className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 hover:border-neutral-350 dark:hover:border-slate-600 text-neutral-700 dark:text-slate-200 py-3 px-4 rounded-xl text-sm font-semibold transition-all active:scale-95 shadow-sm"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
                     <g transform="matrix(1, 0, 0, 1, 0, 0)">
@@ -339,7 +323,7 @@ function Register() {
                       <path d="M12,5.7c1.38,0 2.62,0.47 3.59,1.4l2.69,-2.69C16.66,2.83 14.53,2 12,2C8.05,2 4.83,4.04 3.27,7.14l3.4,2.66c0.75,-2.25 2.85,-3.93 5.33,-3.93z" fill="#EA4335" />
                     </g>
                   </svg>
-                  Register with Google
+                  Sign up with Google
                 </button>
               </div>
             </div>
@@ -348,9 +332,9 @@ function Register() {
           {/* STEP 2: OTP Form */}
           {step === 2 && (
             <form onSubmit={handleVerifyOtp} className="space-y-6">
-              <div className="text-center font-mono">
-                <p className="text-xs text-slate-400 mb-5 leading-relaxed">
-                  Verification code transmitted to email node: <span className="font-semibold text-white block mt-1">{email}</span>.
+              <div className="text-center font-sans">
+                <p className="text-xs text-neutral-500 dark:text-slate-400 mb-5 leading-relaxed">
+                  We've sent a 6-digit code to <span className="font-semibold text-neutral-850 dark:text-slate-100 block mt-1">{email}</span>.
                 </p>
                 <div className="flex justify-between items-center gap-2 max-w-xs mx-auto mb-6">
                   {otp.map((digit, index) => (
@@ -362,7 +346,7 @@ function Register() {
                       value={digit}
                       onChange={(e) => handleOtpChange(e, index)}
                       onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                      className="w-10 h-12 text-center text-xl font-bold bg-slate-950/60 border border-slate-850 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-200 focus:shadow-[0_0_15px_rgba(6,180,212,0.15)]"
+                      className="w-10 h-12 text-center text-xl font-bold bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-755 focus:border-rose-500 text-neutral-800 dark:text-white outline-none transition-all focus:ring-1 focus:ring-rose-500"
                       required
                     />
                   ))}
@@ -373,27 +357,27 @@ function Register() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-1/3 bg-slate-950 border border-slate-850 hover:border-slate-700 text-slate-400 hover:text-white py-2.5 rounded-xl font-mono text-sm transition-colors"
+                  className="w-1/3 bg-white dark:bg-slate-805 border border-neutral-200 dark:border-slate-700 hover:border-neutral-300 dark:hover:border-slate-600 text-neutral-600 dark:text-slate-300 py-3 rounded-xl font-semibold text-sm transition-colors"
                 >
                   Back
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-2/3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-2.5 rounded-xl font-mono text-sm tracking-wide transition-all duration-300 shadow-[0_0_15px_rgba(6,180,212,0.3)] transform active:scale-95"
+                  className="w-2/3 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl text-sm transition-all active:scale-95 shadow-sm"
                 >
-                  {loading ? 'Decrypting...' : 'Verify OTP'}
+                  {loading ? 'Verifying...' : 'Verify OTP'}
                 </button>
               </div>
 
-              <div className="text-center mt-4 font-mono text-xs">
+              <div className="text-center mt-4">
                 <button
                   type="button"
                   onClick={handleSendOtp}
                   disabled={loading}
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                  className="text-xs text-rose-500 hover:text-rose-600 dark:text-rose-450 dark:hover:text-rose-350 font-semibold transition-colors"
                 >
-                  Request Code Retransmission
+                  Resend Code
                 </button>
               </div>
             </form>
@@ -402,21 +386,21 @@ function Register() {
           {/* STEP 3: Final Form (Register or Reset Password) */}
           {step === 3 && (
             <form onSubmit={handleSubmitFinal} className="space-y-5">
-              <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-mono flex items-center justify-between mb-4">
-                <span>Node Email: <strong>{email}</strong></span>
-                <span className="font-bold tracking-widest text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded">PASSED</span>
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl text-emerald-800 dark:text-emerald-400 text-xs font-semibold flex items-center justify-between mb-4">
+                <span>Email Verified: <strong>{email}</strong></span>
+                <span className="font-bold tracking-widest text-[9px] bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded text-emerald-700 dark:text-emerald-300">VERIFIED</span>
               </div>
 
               {userExists ? (
                 /* PASSWORD RESET FLOW FOR EXISTING USERS */
                 <div className="space-y-5">
-                  <div className="p-3 bg-amber-500/5 border border-amber-500/20 text-amber-400 rounded-xl text-xs font-mono leading-relaxed">
-                    Identity collision detected. Expose a new passphrase to reset access keys.
+                  <div className="p-3.5 bg-amber-50 dark:bg-amber-955/20 border border-amber-100 dark:border-amber-900/30 text-amber-805 dark:text-amber-400 rounded-xl text-xs font-semibold leading-relaxed">
+                    An account already exists with this email. Please set a new password below.
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-2">
-                      New Passphrase
+                    <label htmlFor="password" className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      New Password
                     </label>
                     <input
                       id="password"
@@ -425,15 +409,15 @@ function Register() {
                       required
                       value={formData.password}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 hover:border-slate-700 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-300 font-mono text-sm focus:shadow-[0_0_15px_rgba(6,180,212,0.15)] placeholder-slate-600"
-                      placeholder="Enter new password"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 focus:border-neutral-955 dark:focus:border-white rounded-xl text-neutral-800 dark:text-white outline-none transition-all text-sm font-semibold placeholder-neutral-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-neutral-955 dark:focus:ring-white"
+                      placeholder="Enter new password (min. 6 chars)"
                       minLength={6}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-2">
-                      Confirm New Passphrase
+                    <label htmlFor="confirmPassword" className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Confirm New Password
                     </label>
                     <input
                       id="confirmPassword"
@@ -442,7 +426,7 @@ function Register() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 hover:border-slate-700 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-300 font-mono text-sm focus:shadow-[0_0_15px_rgba(6,180,212,0.15)] placeholder-slate-600"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 focus:border-neutral-955 dark:focus:border-white rounded-xl text-neutral-800 dark:text-white outline-none transition-all text-sm font-semibold placeholder-neutral-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-neutral-955 dark:focus:ring-white"
                       placeholder="Confirm new password"
                     />
                   </div>
@@ -450,17 +434,17 @@ function Register() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-3 px-4 rounded-xl font-mono text-sm tracking-wider uppercase transition-all duration-300 shadow-[0_0_15px_rgba(6,180,212,0.3)] transform active:scale-95"
+                    className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all active:scale-95 shadow-sm"
                   >
-                    {loading ? 'Updating Keys...' : 'Reset Passphrase & Connect'}
+                    {loading ? 'Resetting...' : 'Reset Password'}
                   </button>
                 </div>
               ) : (
                 /* REGISTRATION FLOW FOR NEW USERS */
                 <div className="space-y-5">
                   <div>
-                    <label htmlFor="name" className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-2">
-                      Grid Full Name
+                    <label htmlFor="name" className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Full Name
                     </label>
                     <input
                       id="name"
@@ -469,14 +453,14 @@ function Register() {
                       required
                       value={formData.name}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 hover:border-slate-700 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-300 font-mono text-sm focus:shadow-[0_0_15px_rgba(6,180,212,0.15)] placeholder-slate-600"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 focus:border-neutral-955 dark:focus:border-white rounded-xl text-neutral-800 dark:text-white outline-none transition-all text-sm font-semibold placeholder-neutral-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-neutral-955 dark:focus:ring-white"
                       placeholder="John Doe"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="phoneNo" className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-2">
-                      Contact Phone No
+                    <label htmlFor="phoneNo" className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Phone Number
                     </label>
                     <input
                       id="phoneNo"
@@ -485,22 +469,22 @@ function Register() {
                       required
                       value={formData.phoneNo}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 hover:border-slate-700 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-300 font-mono text-sm focus:shadow-[0_0_15px_rgba(6,180,212,0.15)] placeholder-slate-600"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 focus:border-neutral-955 dark:focus:border-white rounded-xl text-neutral-800 dark:text-white outline-none transition-all text-sm font-semibold placeholder-neutral-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-neutral-955 dark:focus:ring-white"
                       placeholder="9876543210"
                       maxLength={10}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-3">
-                      Core Operations Role
+                    <label className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                      Register as
                     </label>
                     <div className="grid grid-cols-2 gap-4">
                       <label
-                        className={`flex items-center justify-center p-4 border rounded-xl cursor-pointer transition-all duration-300 select-none ${
+                        className={`flex items-center justify-center p-4 border rounded-xl cursor-pointer transition-all select-none ${
                           formData.role === 'TAKER'
-                            ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,180,212,0.15)]'
-                            : 'border-slate-850 bg-slate-950/40 text-slate-400 hover:border-slate-700'
+                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-955/20 text-rose-600 dark:text-rose-400'
+                            : 'border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-neutral-500 dark:text-slate-400 hover:border-neutral-300 dark:hover:border-slate-600'
                         }`}
                       >
                         <input
@@ -511,19 +495,19 @@ function Register() {
                           onChange={handleFormChange}
                           className="sr-only"
                         />
-                        <div className="text-center font-mono">
-                          <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="text-center font-sans">
+                          <svg className="w-5 h-5 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
                           <span className="font-bold text-sm uppercase tracking-wider block">Rent Bikes</span>
-                          <p className="text-[10px] text-slate-500 mt-1">Book vehicles</p>
+                          <p className="text-[10px] text-neutral-400 dark:text-slate-500 mt-1">Book vehicles</p>
                         </div>
                       </label>
                       <label
-                        className={`flex items-center justify-center p-4 border rounded-xl cursor-pointer transition-all duration-300 select-none ${
+                        className={`flex items-center justify-center p-4 border rounded-xl cursor-pointer transition-all select-none ${
                           formData.role === 'BIKER'
-                            ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_10px_rgba(6,180,212,0.15)]'
-                            : 'border-slate-850 bg-slate-950/40 text-slate-400 hover:border-slate-700'
+                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-955/20 text-rose-600 dark:text-rose-400'
+                            : 'border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-neutral-500 dark:text-slate-400 hover:border-neutral-300 dark:hover:border-slate-600'
                         }`}
                       >
                         <input
@@ -534,20 +518,20 @@ function Register() {
                           onChange={handleFormChange}
                           className="sr-only"
                         />
-                        <div className="text-center font-mono">
-                          <svg className="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="text-center font-sans">
+                          <svg className="w-5 h-5 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <span className="font-bold text-sm uppercase tracking-wider block">List Bikes</span>
-                          <p className="text-[10px] text-slate-500 mt-1">Host node</p>
+                          <p className="text-[10px] text-neutral-400 dark:text-slate-500 mt-1">Become a Host</p>
                         </div>
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-2">
-                      Core Passphrase
+                    <label htmlFor="password" className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Password
                     </label>
                     <input
                       id="password"
@@ -556,15 +540,15 @@ function Register() {
                       required
                       value={formData.password}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 hover:border-slate-700 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-300 font-mono text-sm focus:shadow-[0_0_15px_rgba(6,180,212,0.15)] placeholder-slate-600"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 focus:border-neutral-955 dark:focus:border-white rounded-xl text-neutral-800 dark:text-white outline-none transition-all text-sm font-semibold placeholder-neutral-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-neutral-955 dark:focus:ring-white"
                       placeholder="••••••••"
                       minLength={6}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-xs font-mono font-bold tracking-widest text-slate-400 uppercase mb-2">
-                      Confirm Passphrase
+                    <label htmlFor="confirmPassword" className="block text-xs font-bold text-neutral-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                      Confirm Password
                     </label>
                     <input
                       id="confirmPassword"
@@ -573,7 +557,7 @@ function Register() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleFormChange}
-                      className="w-full px-4 py-2.5 bg-slate-950/60 border border-slate-850 hover:border-slate-700 focus:border-cyan-500/80 rounded-xl text-white outline-none transition-all duration-300 font-mono text-sm focus:shadow-[0_0_15px_rgba(6,180,212,0.15)] placeholder-slate-600"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 focus:border-neutral-955 dark:focus:border-white rounded-xl text-neutral-800 dark:text-white outline-none transition-all text-sm font-semibold placeholder-neutral-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-neutral-955 dark:focus:ring-white"
                       placeholder="••••••••"
                     />
                   </div>
@@ -581,19 +565,19 @@ function Register() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-3 px-4 rounded-xl font-mono text-sm tracking-wider uppercase transition-all duration-300 shadow-[0_0_15px_rgba(6,180,212,0.3)] transform active:scale-95"
+                    className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all active:scale-95 shadow-sm"
                   >
-                    {loading ? 'Compiling Node Details...' : 'Complete Initialization'}
+                    {loading ? 'Creating account...' : 'Create Account'}
                   </button>
                 </div>
               )}
             </form>
           )}
 
-          <div className="mt-6 text-center font-mono text-xs">
-            <span className="text-slate-500">Established Connection? </span>
-            <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors">
-              Session Sign-In
+          <div className="mt-6 text-center text-xs font-semibold">
+            <span className="text-neutral-500 dark:text-slate-450">Already have an account? </span>
+            <Link to="/login" className="text-rose-500 hover:text-rose-600 dark:text-rose-450 font-bold transition-colors">
+              Sign In
             </Link>
           </div>
         </div>
