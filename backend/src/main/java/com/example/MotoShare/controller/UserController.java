@@ -29,13 +29,14 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> getMyStatus(@AuthenticationPrincipal User user) {
         User freshUser = userService.getUserByEmail(user.getEmail());
 
-        Map<String, Object> status = Map.of(
-                "userId", freshUser.getUserId(),
-                "email", freshUser.getEmail(),
-                "name", freshUser.getName(),
-                "role", freshUser.getRole().name(),
-                "kycStatus", freshUser.getKycStatus().name()
-        );
+        // Map.of() rejects null values, so build the map mutably to allow a null rejectionReason.
+        Map<String, Object> status = new java.util.HashMap<>();
+        status.put("userId", freshUser.getUserId());
+        status.put("email", freshUser.getEmail());
+        status.put("name", freshUser.getName());
+        status.put("role", freshUser.getRole().name());
+        status.put("kycStatus", freshUser.getKycStatus().name());
+        status.put("kycRejectionReason", freshUser.getKycRejectionReason());
 
         return ResponseEntity.ok(status);
     }

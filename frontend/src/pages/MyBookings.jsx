@@ -2,14 +2,34 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { userAPI } from '../services/api';
 
+const statusBadgeClasses = (status) => {
+  if (status === 'UPCOMING') {
+    return 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-400';
+  }
+  if (status === 'CANCELLED') {
+    return 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400';
+  }
+  // COMPLETED — neutral slate, visually distinct from CANCELLED red
+  return 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400';
+};
+
 function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cancellingId, setCancellingId] = useState(null);
+  const [actionMessage, setActionMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  // Auto-dismiss action feedback so it doesn't stick around forever
+  useEffect(() => {
+    if (!actionMessage.text) return;
+    const timer = setTimeout(() => setActionMessage({ type: '', text: '' }), 6000);
+    return () => clearTimeout(timer);
+  }, [actionMessage]);
 
   const fetchBookings = async () => {
     try {
@@ -20,6 +40,29 @@ function MyBookings() {
       console.error('Error fetching bookings:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancel = async (bookingId) => {
+    const confirmed = window.confirm(
+      'Cancel this booking? The slot will be released for other riders. Cancellation is not allowed within 60 minutes of the ride start.'
+    );
+    if (!confirmed) return;
+
+    setCancellingId(bookingId);
+    setActionMessage({ type: '', text: '' });
+    try {
+      await userAPI.cancelBooking(bookingId);
+      setActionMessage({ type: 'success', text: 'Booking cancelled. The slot has been released.' });
+      await fetchBookings();
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        (typeof err.response?.data === 'string' ? err.response.data : null) ||
+        'Failed to cancel booking. Please try again.';
+      setActionMessage({ type: 'error', text: message });
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -58,6 +101,19 @@ function MyBookings() {
         </div>
       )}
 
+      {/* Cancel action feedback */}
+      {actionMessage.text && (
+        <div
+          className={`rounded-xl p-4 mb-6 text-sm font-semibold border ${
+            actionMessage.type === 'success'
+              ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-400'
+              : 'bg-rose-50 dark:bg-rose-955/20 border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400'
+          }`}
+        >
+          {actionMessage.text}
+        </div>
+      )}
+
       {/* Bookings List */}
       {bookings.length > 0 ? (
         <div className="space-y-4">
@@ -75,11 +131,7 @@ function MyBookings() {
                         {booking.bikeCompany} {booking.bikeModel}
                       </h3>
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          booking.status === 'UPCOMING'
-                            ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                            : 'bg-neutral-100 dark:bg-slate-800 border-neutral-200 dark:border-slate-700 text-neutral-550 dark:text-slate-400'
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusBadgeClasses(booking.status)}`}
                       >
                         {booking.status}
                       </span>
@@ -107,14 +159,33 @@ function MyBookings() {
                     </div>
                   </div>
 
-                  {/* Right: Price */}
-                  <div className="mt-4 sm:mt-0 sm:ml-6 sm:text-right">
+                  {/* Right: Price + Cancel */}
+                  <div className="mt-4 sm:mt-0 sm:ml-6 sm:text-right sm:flex sm:flex-col sm:items-end">
                     <div className="text-2xl font-black text-rose-500 dark:text-rose-455">
                       ₹{booking.totalPrice}
                     </div>
                     <div className="text-neutral-450 dark:text-slate-500 text-xs font-semibold mt-1">
                       {booking.durationHours}h &times; ₹{booking.pricePerHour}/hr
                     </div>
+                    {booking.status === 'UPCOMING' && (
+                      <button
+                        onClick={() => handleCancel(booking.id)}
+                        disabled={cancellingId === booking.id}
+                        className="mt-3 inline-flex items-center px-4 py-2 border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-rose-50 dark:hover:bg-rose-950/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {cancellingId === booking.id ? (
+                          <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-2 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Cancelling...
+                          </span>
+                        ) : (
+                          'Cancel Booking'
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

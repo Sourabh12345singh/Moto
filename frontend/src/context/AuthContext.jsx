@@ -87,6 +87,7 @@ export function AuthProvider({ children }) {
         kycStatus: freshData.kycStatus,
         role: freshData.role,
         name: freshData.name,
+        kycRejectionReason: freshData.kycRejectionReason || null,
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);

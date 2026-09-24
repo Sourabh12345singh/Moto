@@ -119,9 +119,11 @@ function KycSubmit() {
         aadhaarNo: formData.aadhaarNo,
       });
 
-      updateUser({ kycStatus: "PENDING" });
+      updateUser({ kycStatus: "PENDING", kycRejectionReason: null });
       setUploadProgress("");
-      setSuccess("KYC submitted successfully!");
+      setSuccess("KYC submitted successfully! Redirecting to dashboard...");
+      // Redirect so the form doesn't stay visible after a successful submission
+      setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
       console.error("KYC error:", err);
       setError(err.message || "Failed to submit KYC");
@@ -142,7 +144,11 @@ function KycSubmit() {
         {user?.kycStatus === "REJECTED" && (
           <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-955/20 border border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl font-semibold">
             <p className="font-bold">Your previous KYC was rejected.</p>
-            <p className="text-xs mt-1.5 font-medium">Please resubmit your documents with correct information.</p>
+            {user?.kycRejectionReason ? (
+              <p className="text-sm mt-1.5">Reason: {user.kycRejectionReason}</p>
+            ) : (
+              <p className="text-xs mt-1.5 font-medium">Please resubmit your documents with correct information.</p>
+            )}
           </div>
         )}
         

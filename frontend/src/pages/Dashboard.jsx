@@ -65,9 +65,15 @@ function Dashboard() {
               </svg>
               <div>
                 <p className="text-rose-900 dark:text-rose-300 font-bold uppercase tracking-wider text-xs">KYC Verification Failed</p>
-                <p className="text-rose-750 dark:text-rose-400 text-xs mt-1 font-medium">
-                  Your submission was rejected during manual validation. Please upload correct documentation.
-                </p>
+                {user?.kycRejectionReason ? (
+                  <p className="text-rose-750 dark:text-rose-400 text-xs mt-1 font-medium">
+                    Reason: {user.kycRejectionReason}
+                  </p>
+                ) : (
+                  <p className="text-rose-750 dark:text-rose-400 text-xs mt-1 font-medium">
+                    Your submission was rejected during manual validation. Please upload correct documentation.
+                  </p>
+                )}
               </div>
             </div>
             <Link

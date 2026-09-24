@@ -58,7 +58,7 @@ public class AdminKycController {
             @RequestParam(required = false) String reason
     ) {
 
-        userService.updateKycStatus(userId, KycStatus.REJECTED);
+        userService.updateKycStatus(userId, KycStatus.REJECTED, reason);
 
         return ResponseEntity.ok(
                 "KYC REJECTED" + (reason != null ? " : " + reason : "")

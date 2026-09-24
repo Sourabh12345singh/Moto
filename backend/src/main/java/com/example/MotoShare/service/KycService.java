@@ -41,8 +41,9 @@ public class KycService {
 
         kycRepository.save(kyc);
 
-        // 2️⃣ Update USER table
+        // 2️⃣ Update USER table (a fresh submission clears the old rejection feedback)
         user.setKycStatus(KycStatus.PENDING);
+        user.setKycRejectionReason(null);
         userRepository.save(user);
     }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -67,6 +67,22 @@ function SearchBikes() {
     handleSearch();
   };
 
+  // Auto-dismiss the booking success banner so it doesn't stick around forever
+  useEffect(() => {
+    if (!bookingSuccess) return;
+    const timer = setTimeout(() => setBookingSuccess(false), 6000);
+    return () => clearTimeout(timer);
+  }, [bookingSuccess]);
+
+  // Refresh the list when the modal closes (e.g. after a double-booking
+  // error) so a just-taken slot doesn't still look available.
+  const handleModalClose = () => {
+    setSelectedBike(null);
+    if (searched && selectedCity) {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-white dark:bg-slate-950 min-h-[85vh] text-neutral-800 dark:text-slate-100 font-sans transition-colors duration-200">
       
@@ -120,7 +136,7 @@ function SearchBikes() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Syncing...
+                  Searching...
                 </span>
               ) : (
                 'Search Bikes'
@@ -212,7 +228,7 @@ function SearchBikes() {
       {selectedBike && (
         <BookingModal
           bike={selectedBike}
-          onClose={() => setSelectedBike(null)}
+          onClose={handleModalClose}
           onSuccess={handleBookingSuccess}
         />
       )}

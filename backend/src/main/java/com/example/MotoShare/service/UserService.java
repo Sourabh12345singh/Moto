@@ -78,6 +78,11 @@ public class UserService {
 
     @Transactional
     public void updateKycStatus(Long userId, KycStatus status) {
+        updateKycStatus(userId, status, null);
+    }
+
+    @Transactional
+    public void updateKycStatus(Long userId, KycStatus status, String reason) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
@@ -85,12 +90,15 @@ public class UserService {
         if (status == KycStatus.REJECTED) {
             kycRepository.deleteByUserId(userId);
             user.setKycStatus(KycStatus.REJECTED);
+            user.setKycRejectionReason(reason != null && !reason.isBlank() ? reason.trim() : null);
             userRepository.save(user);
             return;
         }
 
         // Update user's kycStatus
         user.setKycStatus(status);
+        // A new approval (or any forward transition) clears the old rejection feedback
+        user.setKycRejectionReason(null);
         userRepository.save(user);
 
         // Also update the Kyc entity's status so it no longer shows as PENDING

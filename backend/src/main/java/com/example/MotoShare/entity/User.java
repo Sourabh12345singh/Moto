@@ -39,6 +39,17 @@ public class User implements UserDetails {
     private KycStatus kycStatus = KycStatus.NOT_SUBMITTED;
 
     /**
+     * WHY persist the admin's rejection reason on User?
+     *
+     * The KYC row is deleted on rejection (so the user can resubmit),
+     * which would otherwise destroy the reason. Storing it on User keeps
+     * the feedback visible via GET /api/users/me/status until the next
+     * submission clears it.
+     */
+    @Column(length = 500)
+    private String kycRejectionReason;
+
+    /**
      * WHY @Version on User?
      *
      * Scenario: Admin A opens KYC review for user #5 and approves.

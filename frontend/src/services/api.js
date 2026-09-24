@@ -204,6 +204,20 @@ export const userAPI = {
     const response = await api.get("/users/my-bookings");
     return response.data;
   },
+
+  /**
+   * Cancel a booking.
+   * Only allowed if >= 60 minutes before the booking start time.
+   *
+   * @param bookingId The booking ID to cancel
+   * @returns Success message string
+   *
+   * Endpoint: POST /api/users/cancel/{bookingId}
+   */
+  cancelBooking: async (bookingId) => {
+    const response = await api.post(`/users/cancel/${bookingId}`);
+    return response.data;
+  },
 };
 
 // ============== BIKER APIs ==============

@@ -1,6 +1,8 @@
 package com.example.MotoShare.error;
 
 import io.jsonwebtoken.JwtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -29,6 +31,8 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // ============ DOMAIN EXCEPTIONS ============
 
@@ -102,8 +106,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ApiError> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        ApiError apiError = new ApiError("Username not found with username: "+ex.getMessage(), HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(apiError, apiError.getStatusCode());
+        // Do NOT include the username/email in the response — prevents user enumeration attacks.
+        // Attacker should not be able to tell whether an email exists on the platform.
+        log.warn("Authentication attempt for unknown user: {}", ex.getMessage());
+        ApiError apiError = new ApiError("Invalid credentials.", HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -128,7 +135,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex) {
-        ApiError apiError = new ApiError("An unexpected error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        // Log the real error internally — never expose internal details to the client.
+        // ex.getMessage() can contain SQL queries, class names, or internal paths.
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
+        ApiError apiError = new ApiError("An unexpected error occurred. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

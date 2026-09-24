@@ -1,20 +1,31 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { bikerAPI } from '../services/api';
 
 function MyBikes() {
   const { user } = useAuth();
+  const location = useLocation();
   const [bikes, setBikes] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
 
   useEffect(() => {
     fetchData();
   }, [user]);
 
+  // Auto-dismiss the AddBike success toast so it doesn't stick around
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(''), 5000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   const fetchData = async () => {
     try {
+      setError('');
       const [bikesData, bookingsData] = await Promise.all([
         bikerAPI.getMyBikes(),
         bikerAPI.getMyBookings()
@@ -23,6 +34,7 @@ function MyBikes() {
       setBookings(bookingsData);
     } catch (err) {
       console.error('Error fetching biker data:', err);
+      setError(err.response?.data?.message || 'Failed to load your bikes. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -53,6 +65,29 @@ function MyBikes() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-white dark:bg-slate-950 min-h-[85vh] text-neutral-800 dark:text-slate-100 font-sans transition-colors duration-200">
+      {/* Success toast from AddBike (via navigate state) */}
+      {successMessage && (
+        <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-400 rounded-xl flex items-center gap-3 text-sm font-semibold">
+          <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {successMessage}
+        </div>
+      )}
+
+      {/* API error — never silently show an empty state on failure */}
+      {error && (
+        <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-955/20 border border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-semibold flex items-center justify-between gap-4">
+          <span>{error}</span>
+          <button
+            onClick={fetchData}
+            className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-bold shrink-0 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
@@ -109,8 +144,10 @@ function MyBikes() {
           {bikes.map((bike) => (
             <div key={bike.bikeId} className="bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
               <div className="h-40 bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-slate-800 dark:to-slate-850 flex items-center justify-center">
-                <svg className="w-16 h-16 text-neutral-400 dark:text-slate-650" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                <svg className="w-16 h-16 text-neutral-400 dark:text-slate-650" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <circle cx="5.5" cy="17.5" r="3.5" />
+                  <circle cx="18.5" cy="17.5" r="3.5" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.5 17.5 9 10h4l3 7.5M9 10 7 6h2.5M13 10V7h3" />
                 </svg>
               </div>
               <div className="p-5">
@@ -166,8 +203,10 @@ function MyBikes() {
         </div>
       ) : (
         <div className="text-center py-16 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-800 rounded-2xl mb-8">
-          <svg className="w-16 h-16 text-neutral-350 dark:text-slate-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          <svg className="w-16 h-16 text-neutral-350 dark:text-slate-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <circle cx="5.5" cy="17.5" r="3.5" />
+            <circle cx="18.5" cy="17.5" r="3.5" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5.5 17.5 9 10h4l3 7.5M9 10 7 6h2.5M13 10V7h3" />
           </svg>
           <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">No Bikes Listed Yet</h3>
           <p className="text-neutral-500 dark:text-slate-400 mb-6 max-w-md mx-auto text-sm">

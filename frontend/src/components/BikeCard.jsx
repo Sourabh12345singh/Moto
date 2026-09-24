@@ -21,26 +21,20 @@ function BikeCard({ bike, onBook, hideBookButton = false, kycApproved = true }) 
           />
         ) : (
           <div className="h-full w-full bg-neutral-100 dark:bg-slate-800 flex items-center justify-center">
-            <svg className="w-12 h-12 text-neutral-300 dark:text-slate-600 stroke-[1.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            {/* Motorcycle / bike placeholder icon */}
+            <svg className="w-16 h-16 text-neutral-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
           </div>
         )}
-        <div className="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-sm px-2.5 py-1 rounded-full text-[10px] font-bold text-neutral-800 dark:text-slate-200 uppercase tracking-wider">
-          Instantly Available
-        </div>
       </div>
 
       <div className="p-4 flex flex-col flex-grow">
-        {/* Title & Rating */}
+        {/* Title */}
         <div className="flex justify-between items-start mb-1">
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white group-hover:text-rose-500 transition-colors duration-200">
             {bike.company} {bike.model}
           </h3>
-          <div className="flex items-center space-x-1 text-sm font-semibold text-neutral-900 dark:text-slate-200">
-            <span className="text-amber-500">★</span>
-            <span>4.9</span>
-          </div>
         </div>
 
         {/* Location */}
